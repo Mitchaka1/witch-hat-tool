@@ -1,0 +1,1027 @@
+{
+  "libraryType": "witch_hat_sign_library",
+  "generatedFrom": {
+    "uploadedFile": "Pasted text(3).txt",
+    "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained",
+    "pageTitle": "Signs Explained",
+    "pageId": 866
+  },
+  "notes": [
+    "This file restructures the scraped raw page into one entry per sign.",
+    "Descriptions and spellsUsing were extracted from the page text.",
+    "Vector paths are referenced by suggested filenames; confirm filenames match your actual SVG output."
+  ],
+  "signCount": 35,
+  "signs": [
+    {
+      "id": "column",
+      "name": "Column",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "directional",
+      "description": "Column\n(柱の矢,\nhashira no ya\n) is a directional sign that causes a spell to manifest in a column or beam above the seal.  If the signs aren't balanced, the spell will manifest in the direction with the most or the largest signs\n[\n1\n]\n.  The longer line typically faces inwards, as seen in the\nwatershot seal\nand\nwall breaker seal\n. However, the sign is occasionally inverted, as seen in the\nsnugstone seal\nand\ncrystal shard seal\n. Inverting the sign seems to make the spell emit out in all directions, similar to\ndispersion\n. It is unknown what, if anything, differentiates inverted\ncolumn's\neffect from that of\ndispersion\n.\nHow column emits from a spell with both balanced and unbalanced signs",
+      "spellsUsing": [
+        "Flame Burst Spell",
+        "Flame Shot Seal",
+        "Snugstone Spell",
+        "Rising Platform of Water",
+        "Rising Wave",
+        "Watershot Seal",
+        "Water Horse",
+        "Water Pen",
+        "Vapor bubble spell",
+        "Qifrey's Water Dragon",
+        "Sand Bridge",
+        "Sand Cage",
+        "Serpent's Bed of Sand",
+        "Wall Breaker Seal",
+        "Pegasus Carriage Spell",
+        "Skysoaring Seal",
+        "Wind Wall",
+        "Floatglow Lamp Seal",
+        "Wall-Anchored Floatglow Lamp",
+        "Light Beam",
+        "Crystal Shard",
+        "Repetition Seal",
+        "Beast Repellent",
+        "Floating Drops",
+        "Smokesculpting Seal",
+        "Beldaruit's Smoke Sculpture",
+        "Forbidden Flames",
+        "Forbidden Glow",
+        "Illusory Labyrinth",
+        "Petrification"
+      ],
+      "image": {
+        "name": "Column.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/5/5e/Column.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Column.png"
+      },
+      "vector": {
+        "suggestedFileName": "Column.svg",
+        "localPath": "witch_hat_vectors\\signs\\Column.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "dispersion",
+      "name": "Dispersion",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "semi-directional",
+      "description": "Dispersion\n(拡散の矢,\nkakusan no ya\n) causes the magic of its seal to pour or \"disperse\" outwards. It isn't known if this sign is directional or semi-directional. It has many similarities to\ncolumn\n, with it essentially being a column that leaks its magic outwards rather than shooting or beaming it in a certain direction. Both its normal and inverted variations have been seen, with the difference in their effects being unclear. Interestingly, the effect of inverted\ncolumn\nvery closely matches that of dispersion, as seen in the\nsnugstone seal\n. What differentiates the two is currently unknown.",
+      "spellsUsing": [
+        "Water Pen",
+        "Bird of Light Beacon",
+        "Petrification"
+      ],
+      "image": {
+        "name": "Dispersion.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/9/92/Dispersion.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Dispersion.png"
+      },
+      "vector": {
+        "suggestedFileName": "Dispersion.svg",
+        "localPath": "witch_hat_vectors\\signs\\Dispersion.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "levitation",
+      "name": "Levitation",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "directional",
+      "description": "Levitation\n(浮遊の矢,\nfuyū no ya\n) is a directional sign that has two apparent functions, these depending on the sigil which is paired with the sign. The reason for this is unknown. The arrow-like side of the sign typically faces inwards.\nFor water, fire, and light spells,\nlevitation\ncauses the spell's effect, as well as objects held overtop the seal, to levitate in the air. This can primarily be seen in the\npyreball seal\n[\n2\n]\nand the\nwall-mounted floatglow lamp seal\n.\n[\n3\n]\n. The size of the\nlevitation\nsigns dictate the weight of the objects which can be held aloft, while the size of the seal's sigil determines how powerful the floating magic generated effect will be.\n[\n2\n]\nFor air and wind spells,\nlevitation\nwill cause the object on which the spell is drawn to move through the air. The direction of this movement depends on which way the signs point, but due to a drawing error where the direction of the\nskysoaring seal\nwas reversed between two panels,\n[\n4\n]\n[\n5\n]\nit was unclear in which direction this movement occurs. This changed with the release of the anime, which confirmed that movement is in the direction of the arrow.",
+      "spellsUsing": [
+        "Pyreball Seal",
+        "Rising Platform of Water",
+        "Pegasus Carriage Spell",
+        "Sylph Shoes Seal",
+        "Wall-Anchored Floatglow Lamp",
+        "Beldaruit's Smoke Sculpture"
+      ],
+      "image": {
+        "name": "Levitation.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/d/dd/Levitation.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Levitation.png"
+      },
+      "vector": {
+        "suggestedFileName": "Levitation.svg",
+        "localPath": "witch_hat_vectors\\signs\\Levitation.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "pull",
+      "name": "Pull",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "directional",
+      "description": "Pull\n(引き寄せの矢,\nhikiyose no ya\n) is a directional sign that causes anything matching its seal's sigil (water, air, fire, etc) to be pulled towards the seal when the arrow portion of the sign is pointing inwards. It is likely that, if inverted, the sign will instead push things away. When pointed inwards at an angle, the spell will have both a pulling and twisting effect, and it's likely that if rotated a full 90 degrees, the spell will just twist without pulling.",
+      "spellsUsing": [
+        "Flame Burst Spell",
+        "Wall Bend",
+        "Grasping Wind"
+      ],
+      "image": {
+        "name": "Pull.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/3/31/Pull.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Pull.png"
+      },
+      "vector": {
+        "suggestedFileName": "Pull.svg",
+        "localPath": "witch_hat_vectors\\signs\\Pull.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "crush",
+      "name": "Crush",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "semi-directional",
+      "description": "Crush\n(破砕の矢,\nhasai no ya\n) is a semi-directional sign that breaks things apart. When paired with an earth sigil,\ncrush\nwill cause objects to\ndisintegrate\n, breaking them into tiny pieces until they reach a sand-like or powdered state. If the sign is inverted and the spell is used on a powdered substance, the powder will\nreform into its original shape\n. However, as soon as the spell wears off or the spell is removed, the powder will return to simply being a pile of dust.\nAs\ncrush\nhas only ever been seen paired with an earth sigil in the manga, it is unclear how it would behave if used with other seals. In episode 7 of the anime adaptation, however, it is pointed out that Coco's\nwall breaker spell\nwas also \"crushing the water\" into mist.\n[\n6\n]\nIt has also been proposed that, if paired with a crystal sigil, it may behave in the same manner as when paired with earth, just limited to only affecting crystalline objects. However, this theory is currently unproven and, for now, remains conjecture.",
+      "spellsUsing": [
+        "Integration (Inverted)",
+        "Sand Cage (Inverted)",
+        "Serpent's Bed of Sand",
+        "Wall Breaker Seal",
+        "Smokesculpting Seal (Inverted)"
+      ],
+      "image": {
+        "name": "Crush.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/1/15/Crush.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Crush.png"
+      },
+      "vector": {
+        "suggestedFileName": "Crush.svg",
+        "localPath": "witch_hat_vectors\\signs\\Crush.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "float",
+      "name": "Float",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "non-directional",
+      "description": "Float\nis a non-directional sign that will make things float in midair, seemingly letting them ignore gravity.\nIn most cases,\nfloat\nonly levitates the object on which the seal is drawn. However, there have been five instances where this has not been the case. Of these instances, two have since been retconned - these are the\npyreball seal\nand an unnamed spell from\nchapter 3\n, the spells having their\nfloat\nsigns replaced with\nlevitation\nsigns in\nchapter 8\n[\n7\n]\n[\n2\n]\nand the English release of\nvolume 1\n[\n8\n]\nrespectively. This, combined with the third instance, the\nfish guidance spell\n, requiring\nfloat\nto be paired with\ncrosshair\nin order to levitate the spell's target, suggest that\nfloat\ncan't levitate things on which it isn't drawn unless given explicit instructions to do so. If this is to be believed, it would suggest that the design of the fourth instance, the\nfloatglow lamp seal\n, is flawed, as not only does this spell (which contains\ncolumn\nsigns) produce a ball of light rather than a light beam, the magic of the spell also floats. However, the final instance, the\nearth lift\nspell, makes use of column and float to levitate the ground beneath the spell,\n[\n9\n]\nfurther confusing the matter in which float is meant to function.\nComparison of the float signs between the Japanese release and English release of volume 1",
+      "spellsUsing": [
+        "Floatglow Lamp Seal",
+        "Fish Guiding Seal",
+        "Floating Expansion"
+      ],
+      "image": {
+        "name": "Float.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/c/c8/Float.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Float.png"
+      },
+      "vector": {
+        "suggestedFileName": "Float.svg",
+        "localPath": "witch_hat_vectors\\signs\\Float.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "region",
+      "name": "Region",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "directional",
+      "description": "Region\n(領域の矢,\nryōiki no ya\n) is a directional sign that determines where magic will manifest in relation to a seal. For instance, if the\nregion\nsigns within a seal point all to the same side of the spell,\nthe magic will shoot in that direction\n. Similarly, if all of the\nregion\nsigns within a spell point inwards, the magic will only manifest within the ring of the seal, and if they all point outwards, the magic will manifest outside the ring while not taking effect at all within the bounds of the seal. Interestingly, if\nregion\nsigns are arranged so that they are pointing towards one another, both towards the center and exterior of the seal in opposition to one another, the magic will only manifest directly on the ring of the seal, as can be seen in\nfloating drops\nspell.\nHow configurations of region signs manifest, with the spell emitting from the red regions and the arrows showing its direction.",
+      "spellsUsing": [
+        "Flame Shot Seal",
+        "Rising Wave",
+        "Water Bolt",
+        "Makeover Mask Spel Cookpot Lid",
+        "Illusory Labyrinth"
+      ],
+      "image": {
+        "name": "Region_Sign_Demo.webp",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/0/0a/Region_Sign_Demo.webp",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Region_Sign_Demo.webp"
+      },
+      "vector": {
+        "suggestedFileName": "Region.svg",
+        "localPath": "witch_hat_vectors\\signs\\Region.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "convergence",
+      "name": "Convergence",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "semi-directional",
+      "description": "Convergence\n(収束の矢,\nshūsoku no ya\n) causes the magic of its spell to \"converge,\" centering down to single point. The sign could be semi-directional based on its behavior in the\nwall of wind\nspell. It is unclear exactly how\nconvergence\nfocuses magic, but the effect of spells such as\nwall of wind\nand the\nwall anchored floatglow lamp\nsuggest that it might make the magic manifest about or from a single point. The sign can also make loose particles pack tightly together and become somewhat rigid, as explained by the disciples of\nQifrey's Atelier\nwhen they were designing the\nserpent's bed of sand\n.\n[\n10\n]\nOne of the triangle's points is typically seen pointing inwards.",
+      "spellsUsing": [
+        "Qifrey's Water Dragon",
+        "Serpent's Bed of Sand",
+        "Sylph Shoes Seal",
+        "Wind Wall",
+        "Wall-Anchored Floatglow Lamp",
+        "Repetition Seal",
+        "Light-Reducing Spell",
+        "Cookpot Lid"
+      ],
+      "image": {
+        "name": "Convergence.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/d/d0/Convergence.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Convergence.png"
+      },
+      "vector": {
+        "suggestedFileName": "Convergence.svg",
+        "localPath": "witch_hat_vectors\\signs\\Convergence.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "collection",
+      "name": "Collection",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "semi-directional",
+      "description": "Collection\nwill\ncollect material\nlocated above and around the seal, allowing it to be used by a spell. It is either directional or semi-directional and has never been seen inverted. The open side is typically seen facing inwards.",
+      "spellsUsing": [],
+      "image": {
+        "name": "Collection.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/3/33/Collection.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Collection.png"
+      },
+      "vector": {
+        "suggestedFileName": "Collection.svg",
+        "localPath": "witch_hat_vectors\\signs\\Collection.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "billow",
+      "name": "Billow",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "non-directional",
+      "description": "Billow\n(もくもくの矢,\nmokumoku no ya\n) is a non-directional sign that allows a spell to produce a fluffy cloud that is said to be extremely comfortable to sit on\n[\n11\n]\n.\nCollection\nor supposedly is needed to collect and convert certain materials into clouds, but there seem to be some materials that cannot be converted.  Similar to\nrepetition\n,\nbillowing\ncan take the place of a sigil within a spell. Its only appearance has been within the Dragon's Bed of Clouds, so the exact details of how it works aren't quite clear.",
+      "spellsUsing": [
+        "Serpent's Bed of Sand",
+        "Billow Cluster"
+      ],
+      "image": {
+        "name": "Billowing.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/b/be/Billowing.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Billowing.png"
+      },
+      "vector": {
+        "suggestedFileName": "Billowing.svg",
+        "localPath": "witch_hat_vectors\\signs\\Billowing.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "repetition",
+      "name": "Repetition",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "non-directional",
+      "description": "Repetition\n(くりかえしの矢,\nkurikaeshi no ya\n) continually\nresets objects\naffected by the spell to their previous state, essentially rewinding time.  This can be used to\nkeep food from rotting\nand even to\nclean clothes\n, not to mention many other uses it has.  As of the bonus from\nVolume 12\n, the status of repetition has been retconned from that of a sign to a sigil, but as a sign, it was considered non-directional.",
+      "spellsUsing": [
+        "Serpent's Bed of Sand",
+        "Capture Pennant Spell (Sigil)",
+        "Repetition Seal"
+      ],
+      "image": {
+        "name": "Repetition.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/b/bb/Repetition.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Repetition.png"
+      },
+      "vector": {
+        "suggestedFileName": "Repetition.svg",
+        "localPath": "witch_hat_vectors\\signs\\Repetition.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "weave",
+      "name": "Weave",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "semi-directional",
+      "description": "The\nweave\nsign (also known as\nribbon\n) can turn solid objects affected by the spell into long, flexible ribbons upon contact with the seal. It is most likely semi-directional, but has never been seen inverted. It was invented by\nRicheh\nand is used in her\nribbon spells\n.  This sign is supposed to surround the central sigil.",
+      "spellsUsing": [
+        "Boulder Stretch Rope",
+        "Light Tracer",
+        "Crystal Ribbon"
+      ],
+      "image": {
+        "name": "Weave.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/6/63/Weave.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Weave.png"
+      },
+      "vector": {
+        "suggestedFileName": "Weave.svg",
+        "localPath": "witch_hat_vectors\\signs\\Weave.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "cool",
+      "name": "Cool",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "non-directional",
+      "description": "Cool\n(冷やす矢,\nhiyasu ya\n) is a non-directional sign that presumably cools things down. First introduced in the\nvolume 12\nbonus, it is featured in the\nvapor bubble\nspell, presumably to either make the water cooler to drink or to help it condense from the air for the contraption to gather.",
+      "spellsUsing": [
+        "Vapor Bubble Spell"
+      ],
+      "image": {
+        "name": "Cooling.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/b/b8/Cooling.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Cooling.png"
+      },
+      "vector": {
+        "suggestedFileName": "Cooling.svg",
+        "localPath": "witch_hat_vectors\\signs\\Cooling.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "strengthen",
+      "name": "Strengthen",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "semi-directional",
+      "description": "Strengthen\n(強化の矢,\nkyōka no ya\n) presumably makes objects stronger and more durable. It is most likely semi-directional, but has never been seen inverted. Introduced in the\nvolume 12\nbonus, it is a component of the\ncapture pennant spell\n, helping to make the banner of a\nKnight’s\ncapture pennant\nmore durable.",
+      "spellsUsing": [
+        "Capture Pennant Spell"
+      ],
+      "image": {
+        "name": "Strengthen.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/b/b0/Strengthen.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Strengthen.png"
+      },
+      "vector": {
+        "suggestedFileName": "Strengthen.svg",
+        "localPath": "witch_hat_vectors\\signs\\Strengthen.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "sights_set",
+      "name": "Sights Set",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "semi-directional",
+      "description": "Sights set\n(照準の矢,\nshōjun no ya\n) is most likely a directional or semi-directional sign and has never been seen inverted. First seen in the\ncapture pennant spell\n, it is highly peculiar. Aside from the\npuppet sign\n, it appears to be the only sign that allows a spell to be controlled via one’s mind. Specifically, it seems to serve the function of aiming a spell at some point or target. For example, it’s inclusion on the aforementioned capture pennant spell is likely allows a\nknight\nto target a specific object or person for their\ncapture pennants\nto wrap around.",
+      "spellsUsing": [
+        "Capture Pennant Spell"
+      ],
+      "image": {
+        "name": "Sights_Set.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/5/56/Sights_Set.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Sights_Set.png"
+      },
+      "vector": {
+        "suggestedFileName": "Sights_Set.svg",
+        "localPath": "witch_hat_vectors\\signs\\Sights_Set.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "entwine",
+      "name": "Entwine",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "semi-directional",
+      "description": "Entwine\n(巻きつきの矢,\nmaki-tsuki no ya\n), first seen in the\ncapture pennant spell\n, functions to somehow make an object it is drawn on (such as a ribbon) wrap or “entwine” itself around other objects. The mechanism through which this is achieved is unknown. It is most likely a semi-directional sign and has never been seen inverted.",
+      "spellsUsing": [
+        "Capture Pennant Spell"
+      ],
+      "image": {
+        "name": "Entwine.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/0/08/Entwine.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Entwine.png"
+      },
+      "vector": {
+        "suggestedFileName": "Entwine.svg",
+        "localPath": "witch_hat_vectors\\signs\\Entwine.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "sign_of_wind",
+      "name": "Sign of Wind",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "asymmetric",
+      "description": "The\nsign of wind\n(風の矢,\nkaze no ya\n) is an asymmetrical sign with a strange history. Prior to the\nvolume 12\nbonus, it had only ever made an appearance in\nchapter 1\n. In this chapter, the sign seemed to serve the same purpose as the wind sigil, serving as a sigil for both the\nsylph shoes seal\nand the\npegasus carriage spell\n. However, with the sign not appearing in any subsequent chapters and even being replaced within the sylph shoes, fans believed the sign to have been a retconned version of a wind sigil. However, with its inclusion in the pegasus carriage spell reaffirmed as of the volume 12 bonus, it is now clear that the sign is still canon. Its function, beyond its relation to wind, is unclear.",
+      "spellsUsing": [
+        "Pegasus Carriage Spell"
+      ],
+      "image": {
+        "name": "Sign_of_Wind.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/9/90/Sign_of_Wind.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Sign_of_Wind.png"
+      },
+      "vector": {
+        "suggestedFileName": "Sign_of_Wind.svg",
+        "localPath": "witch_hat_vectors\\signs\\Sign_of_Wind.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "aeriforms_defined",
+      "name": "Aeriforms Defined",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "semi-directional",
+      "description": "Aeriforms defined\n(気体の示す矢,\nkitai o shimesu ya\n) are somewhat confusing thanks to the conflicting nature of its name and design. There are two basic variants of the base wind sigil: wind and aeriforms. The wind sigil makes a spell move air, while aeriforms causes a spell to create air. Confusingly,\naeriforms defined\nhas the same design as the modifiers on the wind sigil, yet shares a name with the aeriforms sigil. This conflicting information makes it difficult to determine the function of the sign, though it is known that it can serve as a modifier to the wind underfoot sigil, as seen in the\npegasus carriage spell\n. The sign is most likely semi-directional and has never been seen inverted.",
+      "spellsUsing": [
+        "Pegasus Carriage Spell"
+      ],
+      "image": {
+        "name": "Aeriforms_Defined.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/3/3e/Aeriforms_Defined.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Aeriforms_Defined.png"
+      },
+      "vector": {
+        "suggestedFileName": "Aeriforms_Defined.svg",
+        "localPath": "witch_hat_vectors\\signs\\Aeriforms_Defined.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "gather",
+      "name": "Gather",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "semi-directional",
+      "description": "Gather\n(集める矢,\natsumeru ya\n) seems to serve a very similar function and design to\ncollection\n, letting a spell use material from its surroundings to construct its effect. How it differs is unclear, but gather may be less passive than collection and actively draw material in rather than just collect things nearby. This, however, is unconfirmed. The sign is seen in the\nvapor bubble spell\n. The sign is either directional or semi-directional and has never been seen inverted.",
+      "spellsUsing": [
+        "Vapor Bubble Spell"
+      ],
+      "image": {
+        "name": "Gather.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/1/17/Gather.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Gather.png"
+      },
+      "vector": {
+        "suggestedFileName": "Gather.svg",
+        "localPath": "witch_hat_vectors\\signs\\Gather.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "glaives",
+      "name": "Glaives",
+      "kind": "sign",
+      "sourceGroup": "officially_named",
+      "category": "semi-directional",
+      "description": "Glaives\nfunction to determine how deeply magic will embed itself into an animal's flesh.\n[\n12\n]\nThey are most likely semi-directional and have never been seen inverted. They likely date back to before the\nDay of the Pact\n, and have only ever been seen in the\nmemory erasure\nspell variants and the\nslime rendering seal\ndrawn by\nEngendale\n. Interestingly, it is possible that\nglaives\naren't classified as signs based on Engendale's comments regarding them, but how exactly this is the case is left unclear.\n[\n12\n]",
+      "spellsUsing": [
+        "Memory Erasure",
+        "Slime Rendering Seal Unofficially Named [ edit ]"
+      ],
+      "image": {
+        "name": "Glaives.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/5/55/Glaives.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Glaives.png"
+      },
+      "vector": {
+        "suggestedFileName": "Glaives.svg",
+        "localPath": "witch_hat_vectors\\signs\\Glaives.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "diamond",
+      "name": "Diamond",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "non-directional",
+      "description": "Diamond\ncan be found within the\nspell of reduction\nused on the\nperiod piece\ncontraption, which uses an inverted\nenlarge\nsign to make nearby objects shrink. The sign is non-directional. By comparing this spell to the\nfloating expansion spell\n, which also contains an\nenlarge\nsign, it is possible to isolate\ndiamond's\neffect. Most likely,\ndiamond\nwill cause a spell to only affect nearby objects while not  affecting the object the spell is drawn on.",
+      "spellsUsing": [
+        "Spell of Reduction"
+      ],
+      "image": {
+        "name": "Diamond_(what_does_it_do).png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/c/cd/Diamond_%28what_does_it_do%29.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Diamond_%28what_does_it_do%29.png"
+      },
+      "vector": {
+        "suggestedFileName": "Diamond_(what_does_it_do).svg",
+        "localPath": "witch_hat_vectors\\signs\\Diamond_(what_does_it_do).svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "window",
+      "name": "Window",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "non-directional",
+      "description": "Window\n(窓の矢,\nmado no ya\n) can be found at the center of the\nfloating expansion\nspell\n[\n13\n]\n, which makes use of an\nenlarge\nsign to make the object it is drawn on grow in size. The sign is non-directional. By comparing this spell to the\nspell of reduction\n, which also contains an (albeit inverted)\nenlarge\nsign,  it is possible to isolate\nwindow's\neffect. Most likely,\nwindow\nwill cause a spell to only affect the object it is drawn on.",
+      "spellsUsing": [
+        "Floating Expansion"
+      ],
+      "image": {
+        "name": "Window.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/d/dc/Window.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Window.png"
+      },
+      "vector": {
+        "suggestedFileName": "Window.svg",
+        "localPath": "witch_hat_vectors\\signs\\Window.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "enlarge",
+      "name": "Enlarge",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "semi-directional",
+      "description": "Enlarge\nis a semi-directional sign that will cause objects to grow in size (or shrink if inverted). Whether it causes a change in size to just the object it is drawn on or just to objects nearby is seemingly controlled by the presence of either a\nwindow\nor\ndiamond\nsign respectively.  It causes objects to either\ngrow\n(corners point outwards) or\nshrink\n(corners point inwards).  A sign may or may not be needed, but it would have to be placed in the center regardless.",
+      "spellsUsing": [
+        "Qifrey's Water Dragon",
+        "Spell of Reduction (Inverted)",
+        "Floating Expansion"
+      ],
+      "image": {
+        "name": "Enlarge.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/5/58/Enlarge.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Enlarge.png"
+      },
+      "vector": {
+        "suggestedFileName": "Enlarge.svg",
+        "localPath": "witch_hat_vectors\\signs\\Enlarge.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "crosshair",
+      "name": "Crosshair",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "non-directional",
+      "description": "Crosshair\nis a component of the\nrainflinger\nseal. The sign is non-directional. Likely it functions to cause magic to only target and/or manifest in objects with a corresponding magic aspect as it",
+      "spellsUsing": [
+        "Rainflinger",
+        "Fish Guiding Seal"
+      ],
+      "image": {
+        "name": "Crosshair_(idk).png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/b/bf/Crosshair_%28idk%29.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Crosshair_%28idk%29.png"
+      },
+      "vector": {
+        "suggestedFileName": "Crosshair_(idk).svg",
+        "localPath": "witch_hat_vectors\\signs\\Crosshair_(idk).svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "radial",
+      "name": "Radial",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "semi-directional",
+      "description": "Radial\nis a component of the\nsnugstone spell\n.  While it's exact function is unclear, it likely serves to decrease the power of the spells it is used in, such as converting fire into heat. It is most likely semi-directional and has never been seen inverted.",
+      "spellsUsing": [
+        "Snugstone Spell"
+      ],
+      "image": {
+        "name": "Radial.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/b/bd/Radial.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Radial.png"
+      },
+      "vector": {
+        "suggestedFileName": "Radial.svg",
+        "localPath": "witch_hat_vectors\\signs\\Radial.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "bolt",
+      "name": "Bolt",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "non-directional",
+      "description": "Bolt\nis a component of the\nwater bolt\nspell. It is a non-directional sign.\nBolt\ncauses the magic of its spell to manifest in the form of bolts-like projectiles.  When paired with a\nregion\nsign, which controls the spell's direction, the projectiles will be shot with dangerous speed.\n[\n14\n]",
+      "spellsUsing": [
+        "Water Bolt"
+      ],
+      "image": {
+        "name": "Bolt.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/8/8e/Bolt.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Bolt.png"
+      },
+      "vector": {
+        "suggestedFileName": "Bolt.svg",
+        "localPath": "witch_hat_vectors\\signs\\Bolt.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "eye",
+      "name": "Eye",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "unknown",
+      "description": "Eye\nis a sign that has only been seen three times; twice within variants of the\ngathering shadows\nspell (in\nSasaran's\ncloak\nand\nEuini's\nmirror mantle\n), and once more as a component of the\nspell\non the\nmakeover mask\n. In tandem with the vision sign, eye seems to have some form of effect relating to the formation of illusions and the manipulation of light. What eye does on its own, however, is unknown, as it has never been seen in isolation. It is likely that this sign is actually a sigil.",
+      "spellsUsing": [
+        "Gathering Shadows",
+        "Makeover Mask Spell",
+        "Cloak Spell"
+      ],
+      "image": {
+        "name": "Eye.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/c/c3/Eye.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Eye.png"
+      },
+      "vector": {
+        "suggestedFileName": "Eye.svg",
+        "localPath": "witch_hat_vectors\\signs\\Eye.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "vision",
+      "name": "Vision",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "unknown",
+      "description": "The\nvision\nsign has been seen four times in total; twice within variants of the\ngathering shadows\nspell (in\nSasaran's\ncloak\nand\nEuini's\nmirror mantle\n), once on the\nlight-reducing spell\nfrom\nQifrey's glasses\n, and a final time within the\nmakeover mask\nspell\n. When paired with eye signs, as is the case in gathering shadows and the makeover mask spell, vision seems to have the ability to create illusions. However, when vision is separate from the eye sign, as is the case in\nQifrey's\nglasses, it can be used as a component in spells intended to aid in sight. While it's exact function is unclear, its usage strongly suggests some form of relation to visual perception and sight. It is likely that this sign is actually a sigil.",
+      "spellsUsing": [
+        "Gathering Shadows",
+        "Makeover Mask Spell * Cloak Spell"
+      ],
+      "image": {
+        "name": "Vision.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/1/18/Vision.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Vision.png"
+      },
+      "vector": {
+        "suggestedFileName": "Vision.svg",
+        "localPath": "witch_hat_vectors\\signs\\Vision.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "bend",
+      "name": "Bend",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "non-directional",
+      "description": "Bend\nis a non-directional sign that has been seen in a number of spells, including\ngathering shadows\n,\npetrification\n, and possibly paired with weave to form a compound sign within the\nwall bend\nspell. When combined with eye and vision, bend will make things disappear into a  pitch black shadow. In wall bend, its possible pairing with weave may suggest that within this spell, it is somehow is meant to make walls more pliable. Petrification has too much going on to say for sure what purpose bend may serve within itself, but between the three spells, the most obvious theme is some form of \"bending or altering of reality.\" Whether that be bending vision for gathering shadows, physical objects for wall bend, or reality itself for petrification, all three spells seem to change the structure of things around them in some way. It is impossible to say for sure what this signs does as of current, but a common theme seems to exist.",
+      "spellsUsing": [
+        "Wall Bend",
+        "Gathering Shadows",
+        "Cloak Spell",
+        "Petrification"
+      ],
+      "image": {
+        "name": "Bend.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/3/37/Bend.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Bend.png"
+      },
+      "vector": {
+        "suggestedFileName": "Bend.svg",
+        "localPath": "witch_hat_vectors\\signs\\Bend.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "rain",
+      "name": "Rain",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "semi-directional",
+      "description": "Rain\ncause's its spell to produce an effect very similar to rainfall down into its immediate area. It may be limited to only water spells, but it would likely work with other sigils such as fire or light to create firework-like effects, or possibly even generating a lava rain with a pairing of fire and earth. This sign is meant to surround the central sigil, which is placed in the empty space at its center. As rain can be turned inside out to reverse its effect,\n[\ncitation needed\n]\nit is considered semi-directional.",
+      "spellsUsing": [
+        "Rainbringer Seal"
+      ],
+      "image": {
+        "name": "Rain.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/1/1d/Rain.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Rain.png"
+      },
+      "vector": {
+        "suggestedFileName": "Rain.svg",
+        "localPath": "witch_hat_vectors\\signs\\Rain.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "puppet",
+      "name": "Puppet",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "semi-directional",
+      "description": "Puppet\n(踊る人形の矢,\nodoru ningyō no ya\n) is highly unusual, appearing to be the only sign (aside from\nsights set\n) that allows one to control a spell with their mind. More specifically,\npuppet\nseems to allow a \"user\" (possibly either the person who drew or last touched the spell) to control the movement of the object it is drawn on. The nature of this movement seems to be dependent on the sigil of the spell. For example, wind-based puppet spells, such as the\nflying puppet of diversion\nand\ncloak spell\n, only seem to be capable of arial movement. While it is never stated, directly or otherwise, that puppet spells move in accordance with the user's mind, there is strong circumstantial evidence to support the idea. For example,\nSasaran\nwas able to maneuver his cloak with incredible accuracy and precision during his fight with\nQifrey\n.\n[\ncitation needed\n]\nWith his cloak lacking any visible controls through which this could be explained, it is reasonable to assume that he piloted it using his mind. Interestingly, the\nsealchair\n, which is similar to Sasaran's cloak in that it lacks visible controls yet can still be operated with clear precision and intent, features a number of signs on its underside which closely resemble\npuppet\n.\n[\n15\n]\nIt is possible that these are variants. It is possible that puppet can be turned inside out to reverse its effect,in which case it would be considered semi-directional. However, this is currently unknown.",
+      "spellsUsing": [
+        "Flying Puppet of Diversion",
+        "Cloak Spell"
+      ],
+      "image": {
+        "name": "Dancing_Puppet.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/a/a3/Dancing_Puppet.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Dancing_Puppet.png"
+      },
+      "vector": {
+        "suggestedFileName": "Dancing_Puppet.svg",
+        "localPath": "witch_hat_vectors\\signs\\Dancing_Puppet.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "bind",
+      "name": "Bind",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "semi-directional",
+      "description": "Bind\ncan be found in the\nwall bend\nspell. While it's exact function is unclear, the dominant theory is that it acts akin to glue, securely attaching itself to the surface of an object that the seal touches. Another less prominent theory is that it acts to hold an object it is drawn on together, preventing it from breaking apart. Bind is most likely semi-directional.",
+      "spellsUsing": [
+        "Wall Bend"
+      ],
+      "image": {
+        "name": "Bind.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/4/4e/Bind.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Bind.png"
+      },
+      "vector": {
+        "suggestedFileName": "Bind.svg",
+        "localPath": "witch_hat_vectors\\signs\\Bind.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "orb",
+      "name": "Orb",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "non-directional",
+      "description": "Orb\n, a non-directional sign, has the affect of creating a spherical space above a seal within which the material the spell controls will collect. Material will only collect in this area if it is added in directly. Material will fill this space bottom to top, collecting at the bottom of the spherical region, still affected by gravity. When more material is added, it will gradually fill the space higher and higher in the same way you would see in a bucket or a cup. It is seen one time in a spell\nQifrey\nuses to create a sphere of water, achieving this by pouring it into the spherical region of the spell directly.\n[\n16\n]",
+      "spellsUsing": [],
+      "image": {
+        "name": "Orb.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/9/96/Orb.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Orb.png"
+      },
+      "vector": {
+        "suggestedFileName": "Orb.svg",
+        "localPath": "witch_hat_vectors\\signs\\Orb.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "purify",
+      "name": "Purify",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "asymmetric",
+      "description": "Purify\nis an asymmetric sign found in both the\nPurify\nspell and the\nsewer grate purifier\n. It functions to separate out any impurities from the magic of its sigil. For example, it will separate out particulates and contaminants from water or dust from air. These separated substances will accumulate near the spell.\n[\n17\n]\n[\n18\n]",
+      "spellsUsing": [],
+      "image": {
+        "name": "Purify_Sign.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/b/b7/Purify_Sign.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Purify_Sign.png"
+      },
+      "vector": {
+        "suggestedFileName": "Purify_Sign.svg",
+        "localPath": "witch_hat_vectors\\signs\\Purify_Sign.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "wiki-derived",
+      "needsReview": true
+    },
+    {
+      "id": "link",
+      "name": "Link",
+      "kind": "sign",
+      "sourceGroup": "unofficially_named",
+      "category": "semi-directional",
+      "description": "The exact effects of\nLink\nare unknown, but it is confirmed that this sign functions to somehow link magic between the object it is drawn on and all other objects that were broken off, removed from, or made out of the same original object. For example, the\nsplit-shard bangles\nare rings all carved from fragments of the same original crystal. Constructed from a\nlight\nsigil, a\nweave\nsign, and a\nlink\nsign, the spell on the rings will create a ribbon of light between the ring it is drawn on and all other rings constructed from that crystal.\n[\n19\n]\nWhat a link spell would be like paired with a sign other than weave, however, is unknown. Link is most likely a semi-directional sign and has never been seen inverted.",
+      "spellsUsing": [
+        "Light Tracer"
+      ],
+      "image": {
+        "name": "Link_Sign.png",
+        "url": "https://static.telepedia.net/witchhatatelierwiki/4/4c/Link_Sign.png",
+        "localPath": "witch_hat_telepedia_data\\images\\Signs_Explained\\Link_Sign.png"
+      },
+      "vector": {
+        "suggestedFileName": "Link_Sign.svg",
+        "localPath": "witch_hat_vectors\\signs\\Link_Sign.svg"
+      },
+      "source": {
+        "pageTitle": "Signs Explained",
+        "pageId": 866,
+        "url": "https://witchhatatelier.telepedia.net/wiki/Signs_Explained"
+      },
+      "confidence": "uncertain/wiki-derived",
+      "needsReview": true
+    }
+  ]
+}
