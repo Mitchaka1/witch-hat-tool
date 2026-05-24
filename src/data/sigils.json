@@ -5,7 +5,7 @@
     "componentType": "sigil",
     "category": "fire",
     "isPrimaryTetrad": true,
-    "description": "The base\nfire\nsigil (炎の紋,\nhonō no mon\n) works to create and manipulate flames or heat depending on the spell in question. The base fire sigil is considered one of the four primary tetrad. [1]",
+    "description": "The base fire sigil (炎の紋, honō no mon ) works to create and manipulate flames or heat depending on the spell in question. The base fire sigil is considered one of the four primary tetrad. [1]",
     "spellsUsing": [
       "Flame Shot Seal",
       "Pyreball Seal",
@@ -18,7 +18,7 @@
       "url": "https://static.telepedia.net/witchhatatelierwiki/d/d8/Fire_sigil.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Fire_sigil.png"
     },
-    "svg": "witch_hat_vectors/sigils/Fire_sigil.svg",
+    "svg": "/vectors/sigils/Fire_sigil.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -30,7 +30,8 @@
         "heat",
         "manipulate"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Fire_sigil.svg"
   },
   {
     "id": "unburning_flames",
@@ -38,7 +39,7 @@
     "componentType": "sigil",
     "category": "fire",
     "isPrimaryTetrad": false,
-    "description": "The unburning flames sigil's exact function is unclear, but it is somehow involved in the production of heatless flames as seen in the\nphantasmal fireball\n. It is possible that this sigil alone is not enough to produce flames without heat and additional signs are needed, but this is currently unknown.",
+    "description": "The unburning flames sigil's exact function is unclear, but it is somehow involved in the production of heatless flames as seen in the phantasmal fireball . It is possible that this sigil alone is not enough to produce flames without heat and additional signs are needed, but this is currently unknown.",
     "spellsUsing": [
       "Phantasmal Fireball"
     ],
@@ -47,7 +48,7 @@
       "url": "https://static.telepedia.net/witchhatatelierwiki/8/8d/Unburning_flame_sigil.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Unburning_flame_sigil.png"
     },
-    "svg": "witch_hat_vectors/sigils/Unburning_flame_sigil.svg",
+    "svg": "/vectors/sigils/Unburning_flame_sigil.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -57,7 +58,8 @@
         "flame",
         "heat"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Unburning_flame_sigil.svg"
   },
   {
     "id": "light",
@@ -65,7 +67,7 @@
     "componentType": "sigil",
     "category": "fire",
     "isPrimaryTetrad": false,
-    "description": "A variant of the fire sigil, the\nlight\nsigil (光の紋,\nhikari no mon\n) functions to produce magic that manifests in the form of light. [2]",
+    "description": "A variant of the fire sigil, the light sigil (光の紋, hikari no mon ) functions to produce magic that manifests in the form of light. [2]",
     "spellsUsing": [
       "Bird of Light Beacon",
       "Floatglow Lamp Seal",
@@ -80,7 +82,7 @@
       "url": "https://static.telepedia.net/witchhatatelierwiki/a/a6/Light.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Light.png"
     },
-    "svg": "witch_hat_vectors/sigils/Light.svg",
+    "svg": "/vectors/sigils/Light.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -89,7 +91,8 @@
       "effectTags": [
         "light"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Light.svg"
   },
   {
     "id": "water",
@@ -97,7 +100,7 @@
     "componentType": "sigil",
     "category": "water",
     "isPrimaryTetrad": true,
-    "description": "The\nwater\nsigil (水の紋,\nmizu no mon\n) works to manipulate, collect, and create water. It is worth noting that many water spells meant to be used over long periods collect water rather than create it. This suggests that creating water is more energetically costly than collecting it. The water sigil is considered one of the four primary tetrad. [1]",
+    "description": "The water sigil (水の紋, mizu no mon ) works to manipulate, collect, and create water. It is worth noting that many water spells meant to be used over long periods collect water rather than create it. This suggests that creating water is more energetically costly than collecting it. The water sigil is considered one of the four primary tetrad. [1]",
     "spellsUsing": [
       "Purify",
       "Rainbringer Seal",
@@ -116,7 +119,7 @@
       "url": "https://static.telepedia.net/witchhatatelierwiki/9/9d/Water.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Water.png"
     },
-    "svg": "witch_hat_vectors/sigils/Water.svg",
+    "svg": "/vectors/sigils/Water.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -127,7 +130,8 @@
         "manipulate",
         "water"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Water.svg"
   },
   {
     "id": "earth",
@@ -135,7 +139,7 @@
     "componentType": "sigil",
     "category": "earth",
     "isPrimaryTetrad": true,
-    "description": "The\nearth\nsigil (地の紋,\nchi no mon\n) allows for the manipulation of numerous solid substances, chiefly wood, stone, sand, and soil. However, it does not allow for the creation of these solid materials, as seen when it was used in the\nearth lift\nspell. [3]\nThe earth sigil is also known as the sigil of\nmight\n(力の紋,\nchikara no mon\n), and is considered one of the four primary tetrad. [1]",
+    "description": "The earth sigil (地の紋, chi no mon ) allows for the manipulation of numerous solid substances, chiefly wood, stone, sand, and soil. However, it does not allow for the creation of these solid materials, as seen when it was used in the earth lift spell. [3] The earth sigil is also known as the sigil of might (力の紋, chikara no mon ), and is considered one of the four primary tetrad. [1]",
     "spellsUsing": [
       "Boulder Stretch Rope",
       "Integration",
@@ -143,28 +147,29 @@
       "Sand Cage",
       "Serpent's Bed of Sand",
       "Wall Bend",
-      "Wall Breaker Seal",
-      "Air",
-      "[",
-      "edit",
-      "]",
-      "Air sigils are responsible for all things relating to air, including its movement, creation, and more. There are currently four variants."
+      "Wall Breaker Seal"
     ],
     "image": {
       "name": "Earth.png",
       "url": "https://static.telepedia.net/witchhatatelierwiki/1/1e/Earth.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Earth.png"
     },
-    "svg": "witch_hat_vectors/sigils/Earth.svg",
+    "svg": "/vectors/sigils/Earth.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
     "engineNotes": {
       "role": "controls spell type/material/domain",
       "effectTags": [
-        "solid"
+        "solid",
+        "wood",
+        "stone",
+        "sand",
+        "soil",
+        "manipulate"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Earth.svg"
   },
   {
     "id": "wind",
@@ -172,7 +177,7 @@
     "componentType": "sigil",
     "category": "air",
     "isPrimaryTetrad": true,
-    "description": "The\nwind\nsigil (風の絞,\nkaze no mon\n) allows for the movement and manipulation, but not the creation, of air. [4]\nThe sigil of wind is also known as the sigil of\nlevitation\n(浮遊の紋,\nfuyū no mon\n) and, is considered one of the four primary tetrad. [1]",
+    "description": "The wind sigil (風の絞, kaze no mon ) allows for the movement and manipulation, but not the creation, of air. [4] The sigil of wind is also known as the sigil of levitation (浮遊の紋, fuyū no mon ) and, is considered one of the four primary tetrad. [1]",
     "spellsUsing": [
       "Flying Puppet of Diversion",
       "Grasping Wind",
@@ -186,7 +191,7 @@
       "url": "https://static.telepedia.net/witchhatatelierwiki/d/d7/Wind_%28redirect%29.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Wind_%28redirect%29.png"
     },
-    "svg": "witch_hat_vectors/sigils/Wind_(redirect).svg",
+    "svg": "/vectors/sigils/Wind_(redirect).svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -196,7 +201,8 @@
         "air",
         "movement"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Wind_(redirect).svg"
   },
   {
     "id": "aeriforms",
@@ -204,14 +210,14 @@
     "componentType": "sigil",
     "category": "air",
     "isPrimaryTetrad": false,
-    "description": "The\naeriforms\nsigil (気体の紋,\nkitai no mon\n) allows for the creation and manipulation (but not movement) of air. [4]",
+    "description": "The aeriforms sigil (気体の紋, kitai no mon ) allows for the creation and manipulation (but not movement) of air. [4]",
     "spellsUsing": [],
     "image": {
       "name": "Aeriforms_(Wind).png",
       "url": "https://static.telepedia.net/witchhatatelierwiki/4/43/Aeriforms_%28Wind%29.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Aeriforms_%28Wind%29.png"
     },
-    "svg": "witch_hat_vectors/sigils/Aeriforms_(Wind).svg",
+    "svg": "/vectors/sigils/Aeriforms_(Wind).svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -219,9 +225,11 @@
       "role": "controls spell type/material/domain",
       "effectTags": [
         "air",
-        "movement"
+        "create",
+        "manipulate"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Aeriforms_(Wind).svg"
   },
   {
     "id": "wind_underfoot",
@@ -229,7 +237,7 @@
     "componentType": "sigil",
     "category": "air",
     "isPrimaryTetrad": false,
-    "description": "The exact function of the\nwind underfoot\nsigil (足場のある風の紋,\nashiba no aru kaze no mon\n) is not yet clear, but it is known that it helps to somehow support solid objects when they are suspended within air, [citation needed]\nsimilar to an air platform. The way this functions or the specifics of the effect are not yet clear.",
+    "description": "The exact function of the wind underfoot sigil (足場のある風の紋, ashiba no aru kaze no mon ) is not yet clear, but it is known that it helps to somehow support solid objects when they are suspended within air, [citation needed] similar to an air platform. The way this functions or the specifics of the effect are not yet clear.",
     "spellsUsing": [
       "Pegasus Carriage Spell",
       "Sylph Shoes Seal"
@@ -239,7 +247,7 @@
       "url": "https://static.telepedia.net/witchhatatelierwiki/d/d8/Wind_Underfoot.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Wind_Underfoot.png"
     },
-    "svg": "witch_hat_vectors/sigils/Wind_Underfoot.svg",
+    "svg": "/vectors/sigils/Wind_Underfoot.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -249,7 +257,8 @@
         "air",
         "solid"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Wind_Underfoot.svg"
   },
   {
     "id": "whorling_winds",
@@ -257,21 +266,16 @@
     "componentType": "sigil",
     "category": "air",
     "isPrimaryTetrad": false,
-    "description": "Whorling winds helps to manipulate air through rotation. The exact way in which this functions is unknown, as is the reason for it looking so different to the other air sigils. It being three-sided could indicate a connection to the\nfire\nsigil, meaning it might be heating the air as we do with hot air balloons.",
+    "description": "Whorling winds helps to manipulate air through rotation. The exact way in which this functions is unknown, as is the reason for it looking so different to the other air sigils. It being three-sided could indicate a connection to the fire sigil, meaning it might be heating the air as we do with hot air balloons.",
     "spellsUsing": [
-      "Pegasus Carriage Spell",
-      "Time",
-      "[",
-      "edit",
-      "]",
-      "Time sigils are responsible for magic which manipulates time. There are currently two known time sigils."
+      "Pegasus Carriage Spell"
     ],
     "image": {
       "name": "Whorling_Winds.png",
       "url": "https://static.telepedia.net/witchhatatelierwiki/b/b1/Whorling_Winds.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Whorling_Winds.png"
     },
-    "svg": "witch_hat_vectors/sigils/Whorling_Winds.svg",
+    "svg": "/vectors/sigils/Whorling_Winds.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -279,11 +283,11 @@
       "role": "controls spell type/material/domain",
       "effectTags": [
         "air",
-        "heat",
-        "manipulate",
-        "rotation"
+        "rotation",
+        "manipulate"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Whorling_Winds.svg"
   },
   {
     "id": "repetition",
@@ -303,7 +307,7 @@
       "url": "https://static.telepedia.net/witchhatatelierwiki/b/bb/Repetition.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Repetition.png"
     },
-    "svg": "witch_hat_vectors/sigils/Repetition.svg",
+    "svg": "/vectors/sigils/Repetition.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -313,7 +317,8 @@
         "reset",
         "time"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Repetition.svg"
   },
   {
     "id": "stop",
@@ -325,39 +330,25 @@
     "spellsUsing": [
       "Petrification",
       "Time Stop",
-      "Warmth-Retention Seal",
-      "Decorative Sigils",
-      "[",
-      "edit",
-      "]",
-      "Decorative sigils depict living things. Using these, it is possible to either make a spell affects the living thing the sigil corresponds to, create magic in the shape of that living thing, or manifest magic inside things the same shape as what the sigil depicts. It is commonly said that these sigils have no practical utility, so their general use is in decline, now mostly used as decoration or by hobbyists.",
-      "[",
-      "]",
-      "Decorative sigils used to be classified as signs,",
-      "[",
-      "]",
-      "but similar to repetition, this was later retconned and they were reclassified as sigils.",
-      "[",
-      "]"
+      "Warmth-Retention Seal"
     ],
     "image": {
       "name": "Time_Stop_Redraw.jpg",
       "url": "https://static.telepedia.net/witchhatatelierwiki/9/90/Time_Stop_Redraw.jpg",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Time_Stop_Redraw.jpg"
     },
-    "svg": "witch_hat_vectors/sigils/Time_Stop_Redraw.svg",
+    "svg": "/vectors/sigils/Time_Stop_Redraw.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
     "engineNotes": {
       "role": "controls spell type/material/domain",
       "effectTags": [
-        "air",
         "halt",
-        "heat",
         "time"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Time_Stop_Redraw.svg"
   },
   {
     "id": "bird_a",
@@ -365,7 +356,7 @@
     "componentType": "sigil",
     "category": "decorative",
     "isPrimaryTetrad": false,
-    "description": "Bird A\nis a decorative sigil that creates a bird-like projection made from the seal's magic which will fly around for a while.  It's only been seen once within the\nbird of light beacon\nspell, [8]\nThe front portion of the spell may or may not be a separate sigil entirely. The design was changed in\nchapter 28 [9]\n. Ideally, the spell's sigil should be placed in the center of this sigil.",
+    "description": "Bird A is a decorative sigil that creates a bird-like projection made from the seal's magic which will fly around for a while. It's only been seen once within the bird of light beacon spell, [8] The front portion of the spell may or may not be a separate sigil entirely. The design was changed in chapter 28 [9] . Ideally, the spell's sigil should be placed in the center of this sigil.",
     "spellsUsing": [
       "Bird of Light Beacon"
     ],
@@ -374,7 +365,7 @@
       "url": "https://static.telepedia.net/witchhatatelierwiki/7/70/Bird.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Bird.png"
     },
-    "svg": "witch_hat_vectors/sigils/Bird.svg",
+    "svg": "/vectors/sigils/Bird.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -385,7 +376,8 @@
         "decorative",
         "light"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Bird.svg"
   },
   {
     "id": "bird_b",
@@ -393,14 +385,14 @@
     "componentType": "sigil",
     "category": "decorative",
     "isPrimaryTetrad": false,
-    "description": "Bird B\ncauses magic to manifest in the shape of a bird, similar to bird A. However, the bird produced by this decorative sigil is noticeably more duck-like compared to bird A. [5] [8]",
+    "description": "Bird B causes magic to manifest in the shape of a bird, similar to bird A. However, the bird produced by this decorative sigil is noticeably more duck-like compared to bird A. [5] [8]",
     "spellsUsing": [],
     "image": {
       "name": "Bird_B_Sign.png",
       "url": "https://static.telepedia.net/witchhatatelierwiki/d/d8/Bird_B_Sign.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Bird_B_Sign.png"
     },
-    "svg": "witch_hat_vectors/sigils/Bird_B_Sign.svg",
+    "svg": "/vectors/sigils/Bird_B_Sign.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -410,7 +402,8 @@
         "decorative",
         "shape"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Bird_B_Sign.svg"
   },
   {
     "id": "dragon",
@@ -418,7 +411,7 @@
     "componentType": "sigil",
     "category": "decorative",
     "isPrimaryTetrad": false,
-    "description": "Dragon\n(巨鱗竜の紋,\ndoragon no mon\n) causes magic to manifest in the shape of a\ndragon\n. The exact dragon species that this decorative sigil imitates is unknown, although the illustration accompanying it appears to be a\nDragonpass Isles\nWyrm. [6]",
+    "description": "Dragon (巨鱗竜の紋, doragon no mon ) causes magic to manifest in the shape of a dragon . The exact dragon species that this decorative sigil imitates is unknown, although the illustration accompanying it appears to be a Dragonpass Isles Wyrm. [6]",
     "spellsUsing": [
       "Qifrey's Water Dragon"
     ],
@@ -427,7 +420,7 @@
       "url": "https://static.telepedia.net/witchhatatelierwiki/5/57/Dragon_Sign.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Dragon_Sign.png"
     },
-    "svg": "witch_hat_vectors/sigils/Dragon_Sign.svg",
+    "svg": "/vectors/sigils/Dragon_Sign.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -437,7 +430,8 @@
         "decorative",
         "shape"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Dragon_Sign.svg"
   },
   {
     "id": "flower",
@@ -445,7 +439,7 @@
     "componentType": "sigil",
     "category": "decorative",
     "isPrimaryTetrad": false,
-    "description": "Flower\ncauses magic to manifest in the shape of numerous flowers. [10]",
+    "description": "Flower causes magic to manifest in the shape of numerous flowers. [10]",
     "spellsUsing": [
       "Flowers Of Light"
     ],
@@ -454,7 +448,7 @@
       "url": "https://static.telepedia.net/witchhatatelierwiki/5/57/Flower_Sign.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Flower_Sign.png"
     },
-    "svg": "witch_hat_vectors/sigils/Flower_Sign.svg",
+    "svg": "/vectors/sigils/Flower_Sign.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -463,7 +457,8 @@
       "effectTags": [
         "shape"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Flower_Sign.svg"
   },
   {
     "id": "horse",
@@ -471,7 +466,7 @@
     "componentType": "sigil",
     "category": "decorative",
     "isPrimaryTetrad": false,
-    "description": "Horse\ncauses magic to manifest in the shape of a horse, as seen in the\nwater horse spell\n. With the water horse spell, it is possible to pull loads via the water horse, suggesting that this decorative sigil (and perhaps others as well) has the potential for practical usage. [11] [12]",
+    "description": "Horse causes magic to manifest in the shape of a horse, as seen in the water horse spell . With the water horse spell, it is possible to pull loads via the water horse, suggesting that this decorative sigil (and perhaps others as well) has the potential for practical usage. [11] [12]",
     "spellsUsing": [
       "Water Horse"
     ],
@@ -480,7 +475,7 @@
       "url": "https://static.telepedia.net/witchhatatelierwiki/7/74/Horse_Sign.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Horse_Sign.png"
     },
-    "svg": "witch_hat_vectors/sigils/Horse_Sign.svg",
+    "svg": "/vectors/sigils/Horse_Sign.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -491,7 +486,8 @@
         "shape",
         "water"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Horse_Sign.svg"
   },
   {
     "id": "owlcat",
@@ -499,21 +495,22 @@
     "componentType": "sigil",
     "category": "decorative",
     "isPrimaryTetrad": false,
-    "description": "Based on its design, this sigil is likely for forming a full\nOwlcat\n(猫梟の紋,\nneko fukurō no mon\n) as opposed to just the head of an\nowlcat\n, as is the case with the confirmed\nowlcat head sigil\n. [13]\nHowever, this is yet to be confirmed, and more information is needed.",
+    "description": "Based on its design, this sigil is likely for forming a full Owlcat (猫梟の紋, neko fukurō no mon ) as opposed to just the head of an owlcat , as is the case with the confirmed owlcat head sigil . [13] However, this is yet to be confirmed, and more information is needed.",
     "spellsUsing": [],
     "image": {
       "name": "Owlcat_Sigil_Full.png",
       "url": "https://static.telepedia.net/witchhatatelierwiki/2/23/Owlcat_Sigil_Full.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Owlcat_Sigil_Full.png"
     },
-    "svg": "witch_hat_vectors/sigils/Owlcat_Sigil_Full.svg",
+    "svg": "/vectors/sigils/Owlcat_Sigil_Full.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
     "engineNotes": {
       "role": "controls spell type/material/domain",
       "effectTags": []
-    }
+    },
+    "assetPath": "/vectors/sigils/Owlcat_Sigil_Full.svg"
   },
   {
     "id": "owlcat_head",
@@ -521,14 +518,14 @@
     "componentType": "sigil",
     "category": "decorative",
     "isPrimaryTetrad": false,
-    "description": "Owlcat\n(猫梟の紋,\nneko fukurō no mon\n)\nHead\ncauses magic to manifest in the shape of the head of an\nOwlcat\nwith winter plumage, which is almost spherical in shape. [14]\nThis sigil is identical to the normal\nowlcat sigil\n, except it is missing the section corresponding to an owlcat's body. This implies that decorative signs can be split into smaller portions which will form the individual body parts corresponding to that section of the decorative sigil.",
+    "description": "Owlcat (猫梟の紋, neko fukurō no mon ) Head causes magic to manifest in the shape of the head of an Owlcat with winter plumage, which is almost spherical in shape. [14] This sigil is identical to the normal owlcat sigil , except it is missing the section corresponding to an owlcat's body. This implies that decorative signs can be split into smaller portions which will form the individual body parts corresponding to that section of the decorative sigil.",
     "spellsUsing": [],
     "image": {
       "name": "Owlcat_Sign.png",
       "url": "https://static.telepedia.net/witchhatatelierwiki/4/4c/Owlcat_Sign.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Owlcat_Sign.png"
     },
-    "svg": "witch_hat_vectors/sigils/Owlcat_Sign.svg",
+    "svg": "/vectors/sigils/Owlcat_Sign.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -538,7 +535,8 @@
         "decorative",
         "shape"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Owlcat_Sign.svg"
   },
   {
     "id": "scalewolf",
@@ -546,14 +544,14 @@
     "componentType": "sigil",
     "category": "decorative",
     "isPrimaryTetrad": false,
-    "description": "Scalewolf\n(鱗狼の矢,\nuroko ōkami no mon\n) causes magic to manifest in the shape of a\nscalewolf\n. [6]",
+    "description": "Scalewolf (鱗狼の矢, uroko ōkami no mon ) causes magic to manifest in the shape of a scalewolf . [6]",
     "spellsUsing": [],
     "image": {
       "name": "Scalewolf_Sign.png",
       "url": "https://static.telepedia.net/witchhatatelierwiki/1/1b/Scalewolf_Sign.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Scalewolf_Sign.png"
     },
-    "svg": "witch_hat_vectors/sigils/Scalewolf_Sign.svg",
+    "svg": "/vectors/sigils/Scalewolf_Sign.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -562,7 +560,8 @@
       "effectTags": [
         "shape"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Scalewolf_Sign.svg"
   },
   {
     "id": "torchstag",
@@ -570,14 +569,14 @@
     "componentType": "sigil",
     "category": "decorative",
     "isPrimaryTetrad": false,
-    "description": "Torchstag\n(松明鹿の紋,\ntaimatsu shika no mon\n) causes magic to manifest in the shape of a\ntorchstag\n. [6]",
+    "description": "Torchstag (松明鹿の紋, taimatsu shika no mon ) causes magic to manifest in the shape of a torchstag . [6]",
     "spellsUsing": [],
     "image": {
       "name": "Torchstag_Sign.png",
       "url": "https://static.telepedia.net/witchhatatelierwiki/b/b5/Torchstag_Sign.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Torchstag_Sign.png"
     },
-    "svg": "witch_hat_vectors/sigils/Torchstag_Sign.svg",
+    "svg": "/vectors/sigils/Torchstag_Sign.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -586,7 +585,8 @@
       "effectTags": [
         "shape"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Torchstag_Sign.svg"
   },
   {
     "id": "liongoat",
@@ -594,14 +594,14 @@
     "componentType": "sigil",
     "category": "decorative",
     "isPrimaryTetrad": false,
-    "description": "Liongoat\n(松明鹿の矢,\nshishi yagi no mon\n) causes magic to manifest in the shape of a\nliongoat\n. [6]",
+    "description": "Liongoat (松明鹿の矢, shishi yagi no mon ) causes magic to manifest in the shape of a liongoat . [6]",
     "spellsUsing": [],
     "image": {
       "name": "Liongoat_Sigil_Redraw.png",
       "url": "https://static.telepedia.net/witchhatatelierwiki/7/79/Liongoat_Sigil_Redraw.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Liongoat_Sigil_Redraw.png"
     },
-    "svg": "witch_hat_vectors/sigils/Liongoat_Sigil_Redraw.svg",
+    "svg": "/vectors/sigils/Liongoat_Sigil_Redraw.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -610,7 +610,8 @@
       "effectTags": [
         "shape"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Liongoat_Sigil_Redraw.svg"
   },
   {
     "id": "valance_leech",
@@ -618,20 +619,16 @@
     "componentType": "sigil",
     "category": "decorative",
     "isPrimaryTetrad": false,
-    "description": "Valance leech\n(帳蛭の紋,\ntobari hiru no mon\n) causes magic to manifest in the shape of a\nvalance leech\n. [15]",
+    "description": "Valance leech (帳蛭の紋, tobari hiru no mon ) causes magic to manifest in the shape of a valance leech . [15]",
     "spellsUsing": [
-      "Valence Leech Counterlock",
-      "Misc",
-      "[",
-      "edit",
-      "]"
+      "Valance Leech Counterlock"
     ],
     "image": {
       "name": "Valance_Leech_Sign.png",
       "url": "https://static.telepedia.net/witchhatatelierwiki/2/2d/Valance_Leech_Sign.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Valance_Leech_Sign.png"
     },
-    "svg": "witch_hat_vectors/sigils/Valance_Leech_Sign.svg",
+    "svg": "/vectors/sigils/Valance_Leech_Sign.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -640,7 +637,8 @@
       "effectTags": [
         "shape"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Valance_Leech_Sign.svg"
   },
   {
     "id": "crystal",
@@ -658,7 +656,7 @@
       "url": "https://static.telepedia.net/witchhatatelierwiki/3/31/Crystal.png",
       "localPath": "witch_hat_telepedia_data\\images\\Sigils_Explained\\Crystal.png"
     },
-    "svg": "witch_hat_vectors/sigils/Crystal.svg",
+    "svg": "/vectors/sigils/Crystal.svg",
     "sourcePage": "https://witchhatatelier.telepedia.net/wiki/Sigils_Explained",
     "confidence": "wiki-derived",
     "needsReview": true,
@@ -667,7 +665,8 @@
       "effectTags": [
         "crystal"
       ]
-    }
+    },
+    "assetPath": "/vectors/sigils/Crystal.svg"
   },
   {
     "id": "guidance",
@@ -675,7 +674,7 @@
     "componentType": "sigil",
     "category": "misc",
     "isPrimaryTetrad": false,
-    "description": "Guidance\n(誘導の紋,\nyūdō no mon\n) functions to attract objects to its location that match parameters set by the other signs and sigils within a spell. [16]\nFor example, a guidance based spell that contains a\nPouch of Calling spell\nwill attract all nearby Pouches of Calling.",
+    "description": "Guidance (誘導の紋, yūdō no mon ) functions to attract objects to its location that match parameters set by the other signs and sigils within a spell. [16] For example, a guidance based spell that contains a Pouch of Calling spell will attract all nearby Pouches of Calling.",
     "spellsUsing": [],
     "image": null,
     "svg": null,
@@ -687,7 +686,8 @@
       "effectTags": [
         "attract"
       ]
-    }
+    },
+    "assetPath": null
   },
   {
     "id": "calling",
@@ -695,7 +695,7 @@
     "componentType": "sigil",
     "category": "misc",
     "isPrimaryTetrad": false,
-    "description": "Calling\n(呼び声の紋,\ntobigoe no mon\n) echoes back a recorded phrase. So far, it has only been seen in the\nPouch of Calling\n. [17] [18]",
+    "description": "Calling (呼び声の紋, tobigoe no mon ) echoes back a recorded phrase. So far, it has only been seen in the Pouch of Calling . [17] [18]",
     "spellsUsing": [],
     "image": null,
     "svg": null,
@@ -707,6 +707,7 @@
       "effectTags": [
         "recorded"
       ]
-    }
+    },
+    "assetPath": null
   }
 ]
