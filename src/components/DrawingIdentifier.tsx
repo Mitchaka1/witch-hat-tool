@@ -70,6 +70,8 @@ type PreparedReference = SymbolReference & {
 
 type MatchResult = PreparedReference & {
   score: number;
+  detectedRotation: number;
+  scoreMargin?: number;
 };
 
 type Point = {
@@ -142,10 +144,21 @@ type ImportedInkLayer = {
   dataUrl: string;
 };
 
+type ImportState = {
+  phase: string;
+  detail: string;
+  progress: number;
+};
+
 type ClipboardPayload =
   | {
       type: "symbol";
       symbol: DrawnSymbol;
+    }
+  | {
+      type: "selection";
+      circles: CircleComponent[];
+      symbols: DrawnSymbol[];
     }
   | {
       type: "spell";
@@ -163,7 +176,24 @@ type ComponentBox = {
   maxY: number;
 };
 
+type SelectionBox = {
+  start: Point;
+  current: Point;
+};
+
 type InteractionState =
+  | {
+      mode: "box-select";
+      startPoint: Point;
+      currentPoint: Point;
+      additive: boolean;
+    }
+  | {
+      mode: "move-selection";
+      lastPoint: Point;
+      circleIds: string[];
+      symbolIds: string[];
+    }
   | {
       mode: "move-symbol";
       id: string;
@@ -221,7 +251,16 @@ const CANVAS_RADIUS = CANVAS_SIZE / 2;
 const MIN_SPELL_RADIUS = 28;
 const PASTE_STEP = 64;
 const IMPORT_MATCH_THRESHOLD = 0.48;
+const IMPORT_MATCH_MARGIN = 0.08;
 const MIN_IMPORT_PIXELS = 18;
+const ROTATION_MATCH_STEPS = Array.from({ length: 24 }, (_, index) => index * 15);
+const IMPORT_MATCH_MAX_SIZE = 170;
+const IMPORT_MATCH_MAX_PIXELS = 5200;
+const IMPORT_COMPONENT_MAX_SIZE = 300;
+const IMPORT_COMPONENT_MAX_PIXELS = 18000;
+const IMPORT_SYMBOL_MATCH_LIMIT = 48;
+const IMPORT_ARRIVAL_ZOOM = 0.72;
+const IMPORT_CIRCLE_RING_TOLERANCE = 9;
 const PEN_CURSOR =
   'url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2732%27 height=%2732%27 viewBox=%270 0 32 32%27%3E%3Cpath d=%27M7 26 20 3l5 2-6 25-5-7z%27 fill=%27%23171717%27/%3E%3Cpath d=%27m20 3 5 2%27 stroke=%27white%27 stroke-width=%271.5%27/%3E%3Cpath d=%27M14 23 8 29%27 stroke=%27%23171717%27 stroke-width=%272%27 stroke-linecap=%27round%27/%3E%3C/svg%3E") 8 28, crosshair';
 const ERASER_CURSOR =
@@ -291,6 +330,16 @@ function categoryLabel(value: string) {
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function referenceKey(reference: SymbolReference) {
+  return `${reference.type}:${reference.id}`;
+}
+
+function waitForPaint() {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, 0);
+  });
 }
 
 function createCanvas(size = SIGNATURE_SIZE) {
@@ -373,6 +422,35 @@ function signatureFromCanvas(source: HTMLCanvasElement) {
   };
 }
 
+function signatureFromMarks(marks: Mark[], unrotateDegrees = 0) {
+  const canvas = createCanvas(CANVAS_SIZE);
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+
+  if (!context) {
+    return null;
+  }
+
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+
+  const bounds = marksBounds(marks);
+  const center = bounds
+    ? {
+        x: (bounds.minX + bounds.maxX) / 2,
+        y: (bounds.minY + bounds.maxY) / 2,
+      }
+    : CANVAS_CENTER;
+
+  context.save();
+  context.translate(center.x, center.y);
+  context.rotate((-unrotateDegrees * Math.PI) / 180);
+  context.translate(-center.x, -center.y);
+  drawSymbolMarks(context, marks);
+  context.restore();
+
+  return signatureFromCanvas(canvas);
+}
+
 function inkBounds(data: Uint8ClampedArray, width: number, height: number) {
   let minX = width;
   let minY = height;
@@ -448,6 +526,52 @@ function compareSignatures(
     0,
     drawingFit * 0.36 + referenceFit * 0.36 + overlapScore * 0.18 + sizeRatio * 0.1,
   );
+}
+
+function drawingSignatureVariants(marks: Mark[]) {
+  const variants: Array<{
+    rotation: number;
+    drawing: NonNullable<ReturnType<typeof signatureFromMarks>>;
+  }> = [];
+
+  for (const rotation of ROTATION_MATCH_STEPS) {
+    const drawing = signatureFromMarks(marks, rotation);
+
+    if (drawing) {
+      variants.push({
+        rotation,
+        drawing,
+      });
+    }
+  }
+
+  return variants;
+}
+
+function bestRotatedMatchScoreFromVariants(
+  variants: ReturnType<typeof drawingSignatureVariants>,
+  reference: PreparedReference,
+) {
+  let bestScore = 0;
+  let bestRotation = 0;
+
+  for (const variant of variants) {
+    if (variant.drawing.inkPixels < 12) {
+      continue;
+    }
+
+    const score = compareSignatures(variant.drawing, reference);
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestRotation = variant.rotation;
+    }
+  }
+
+  return {
+    score: bestScore,
+    detectedRotation: bestRotation,
+  };
 }
 
 function distanceMapFromSignature(signature: Uint8Array<ArrayBufferLike>) {
@@ -975,6 +1099,84 @@ function hitTestComponents(
   return null;
 }
 
+function selectionRectFromPoints(start: Point, current: Point) {
+  return {
+    minX: Math.min(start.x, current.x),
+    maxX: Math.max(start.x, current.x),
+    minY: Math.min(start.y, current.y),
+    maxY: Math.max(start.y, current.y),
+  };
+}
+
+function boxesIntersect(
+  left: { minX: number; maxX: number; minY: number; maxY: number },
+  right: { minX: number; maxX: number; minY: number; maxY: number },
+) {
+  return (
+    left.minX <= right.maxX &&
+    left.maxX >= right.minX &&
+    left.minY <= right.maxY &&
+    left.maxY >= right.minY
+  );
+}
+
+function circleVisualBox(circle: CircleComponent): ComponentBox {
+  const size = circle.radius * 2;
+
+  return {
+    center: circle.center,
+    size,
+    minX: circle.center.x - circle.radius,
+    maxX: circle.center.x + circle.radius,
+    minY: circle.center.y - circle.radius,
+    maxY: circle.center.y + circle.radius,
+  };
+}
+
+function circleStrokeIntersectsBox(
+  box: ReturnType<typeof selectionRectFromPoints>,
+  circle: CircleComponent,
+) {
+  for (let degrees = 0; degrees < 360; degrees += 6) {
+    const radians = (degrees * Math.PI) / 180;
+    const point = {
+      x: circle.center.x + Math.sin(radians) * circle.radius,
+      y: circle.center.y - Math.cos(radians) * circle.radius,
+    };
+
+    if (
+      point.x >= box.minX &&
+      point.x <= box.maxX &&
+      point.y >= box.minY &&
+      point.y <= box.maxY
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function componentIdsInSelectionBox(
+  box: ReturnType<typeof selectionRectFromPoints>,
+  symbols: DrawnSymbol[],
+  circles: CircleComponent[],
+) {
+  return {
+    symbolIds: symbols
+      .filter((symbol) => {
+        const symbolBox = symbolVisualBox(symbol);
+
+        return Boolean(symbolBox && boxesIntersect(box, symbolBox));
+      })
+      .map((symbol) => symbol.id),
+    circleIds: circles
+      .filter((circle) => boxesIntersect(box, circleVisualBox(circle)))
+      .filter((circle) => circleStrokeIntersectsBox(box, circle))
+      .map((circle) => circle.id),
+  };
+}
+
 function symbolVisualBox(symbol: DrawnSymbol): ComponentBox | null {
   const center = symbolCenter(symbol);
 
@@ -1068,7 +1270,7 @@ function selectedHandleAt(
       };
     }
 
-    if (distanceBetween(point, selectedCircle.center) <= radius) {
+    if (Math.abs(distanceBetween(point, selectedCircle.center) - radius) <= CIRCLE_LINE_WIDTH + 10) {
       return { mode: "move-circle" as const, id: selectedCircle.id };
     }
   }
@@ -1317,14 +1519,7 @@ function clipboardBounds(payload: ClipboardPayload) {
     payload.type === "symbol"
       ? [symbolVisualBox(payload.symbol)]
       : [
-          ...payload.circles.map((circle) => ({
-            center: circle.center,
-            size: circle.radius * 2,
-            minX: circle.center.x - circle.radius,
-            maxX: circle.center.x + circle.radius,
-            minY: circle.center.y - circle.radius,
-            maxY: circle.center.y + circle.radius,
-          })),
+          ...payload.circles.map(circleVisualBox),
           ...payload.symbols.map(symbolVisualBox),
         ];
   const visibleBoxes = boxes.filter((box): box is ComponentBox => Boolean(box));
@@ -1430,11 +1625,14 @@ function canvasPointFromClient(
 
 export default function DrawingIdentifier() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasViewportRef = useRef<HTMLDivElement | null>(null);
   const drawingRef = useRef(false);
   const activeStrokeRef = useRef<Stroke>([]);
   const interactionRef = useRef<InteractionState | null>(null);
   const activeSymbolIdRef = useRef<string | null>(null);
   const selectedCircleIdRef = useRef<string | null>(null);
+  const selectedSymbolIdsRef = useRef<Set<string>>(new Set());
+  const selectedCircleIdsRef = useRef<Set<string>>(new Set());
   const pasteCountRef = useRef(1);
   const insertCountRef = useRef(0);
   const importInputRef = useRef<HTMLInputElement | null>(null);
@@ -1446,6 +1644,8 @@ export default function DrawingIdentifier() {
   const [importedInkLayers, setImportedInkLayers] = useState<ImportedInkLayer[]>([]);
   const [activeSymbolId, setActiveSymbolId] = useState<string | null>(null);
   const [selectedCircleId, setSelectedCircleId] = useState<string | null>(null);
+  const [selectedSymbolIds, setSelectedSymbolIds] = useState<Set<string>>(new Set());
+  const [selectedCircleIds, setSelectedCircleIds] = useState<Set<string>>(new Set());
   const [activeType, setActiveType] = useState<"all" | SymbolType>("all");
   const [toolMode, setToolMode] = useState<ToolMode>("select");
   const [status, setStatus] = useState("Preparing symbol database...");
@@ -1454,7 +1654,10 @@ export default function DrawingIdentifier() {
   const [preparedSymbols, setPreparedSymbols] = useState<PreparedReference[]>([]);
   const [clipboard, setClipboard] = useState<ClipboardPayload | null>(null);
   const [glowingCircleIds, setGlowingCircleIds] = useState<Set<string>>(new Set());
+  const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
+  const [importState, setImportState] = useState<ImportState | null>(null);
   const [showSymbolShelf, setShowSymbolShelf] = useState(false);
+  const [showChangeSymbolPicker, setShowChangeSymbolPicker] = useState(false);
   const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
@@ -1464,6 +1667,14 @@ export default function DrawingIdentifier() {
   useEffect(() => {
     selectedCircleIdRef.current = selectedCircleId;
   }, [selectedCircleId]);
+
+  useEffect(() => {
+    selectedSymbolIdsRef.current = selectedSymbolIds;
+  }, [selectedSymbolIds]);
+
+  useEffect(() => {
+    selectedCircleIdsRef.current = selectedCircleIds;
+  }, [selectedCircleIds]);
 
   const activeSymbol = useMemo(
     () => activeDrawableSymbol(symbols, activeSymbolId),
@@ -1481,6 +1692,10 @@ export default function DrawingIdentifier() {
     () => buildSpellSnapshot(symbols, circles, importedInkLayers),
     [circles, importedInkLayers, symbols],
   );
+  const spellGrammarText = useMemo(
+    () => readableSpellGrammar(spellSnapshot),
+    [spellSnapshot],
+  );
 
   const filteredMatches = useMemo(
     () =>
@@ -1494,6 +1709,8 @@ export default function DrawingIdentifier() {
       ),
     [activeType, preparedSymbols],
   );
+  const selectedCount = selectedSymbolIds.size + selectedCircleIds.size;
+  const hasSelection = selectedCount > 0;
 
   const updateMatches = useCallback(
     (mode: "live" | "manual") => {
@@ -1511,12 +1728,17 @@ export default function DrawingIdentifier() {
         return;
       }
 
+      const drawingVariants = drawingSignatureVariants(activeSymbol.marks);
       const nextMatches = preparedRef.current
         .filter((reference) => activeType === "all" || reference.type === activeType)
-        .map((reference) => ({
-          ...reference,
-          score: compareSignatures(drawing, reference),
-        }))
+        .map((reference) => {
+          const best = bestRotatedMatchScoreFromVariants(drawingVariants, reference);
+
+          return {
+            ...reference,
+            ...best,
+          };
+        })
         .sort((left, right) => right.score - left.score)
         .slice(0, 6);
 
@@ -1567,6 +1789,9 @@ export default function DrawingIdentifier() {
       importedInkLayers,
       selectedSymbolId: activeSymbolId,
       selectedCircleId,
+      selectedSymbolIds,
+      selectedCircleIds,
+      selectionBox,
       glowingCircleIds,
       canvas: canvasRef.current,
       imageCache: imageCacheRef.current,
@@ -1576,7 +1801,17 @@ export default function DrawingIdentifier() {
     return () => {
       cancelled = true;
     };
-  }, [activeSymbolId, circles, glowingCircleIds, importedInkLayers, selectedCircleId, symbols]);
+  }, [
+    activeSymbolId,
+    circles,
+    glowingCircleIds,
+    importedInkLayers,
+    selectedCircleId,
+    selectedCircleIds,
+    selectedSymbolIds,
+    selectionBox,
+    symbols,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -1609,18 +1844,66 @@ export default function DrawingIdentifier() {
   function startNewSymbol() {
     setActiveSymbolId(null);
     setSelectedCircleId(null);
+    setSelectedSymbolIds(new Set());
+    setSelectedCircleIds(new Set());
     setToolMode("pen");
     setMatches([]);
     setStatus("Start drawing the next symbol.");
   }
 
+  function setSingleSelection(hit: ReturnType<typeof hitTestComponents>) {
+    const nextSymbolId = hit?.type === "symbol" ? hit.id : null;
+    const nextCircleId = hit?.type === "circle" ? hit.id : null;
+
+    activeSymbolIdRef.current = nextSymbolId;
+    selectedCircleIdRef.current = nextCircleId;
+    selectedSymbolIdsRef.current = nextSymbolId ? new Set([nextSymbolId]) : new Set();
+    selectedCircleIdsRef.current = nextCircleId ? new Set([nextCircleId]) : new Set();
+    setActiveSymbolId(nextSymbolId);
+    setSelectedCircleId(nextCircleId);
+    setSelectedSymbolIds(nextSymbolId ? new Set([nextSymbolId]) : new Set());
+    setSelectedCircleIds(nextCircleId ? new Set([nextCircleId]) : new Set());
+  }
+
+  function toggleSelection(hit: ReturnType<typeof hitTestComponents>) {
+    if (!hit) {
+      return;
+    }
+
+    if (hit.type === "symbol") {
+      const nextSymbols = new Set(selectedSymbolIdsRef.current);
+
+      if (nextSymbols.has(hit.id)) {
+        nextSymbols.delete(hit.id);
+      } else {
+        nextSymbols.add(hit.id);
+      }
+
+      selectedSymbolIdsRef.current = nextSymbols;
+      setSelectedSymbolIds(nextSymbols);
+      setActiveSymbolId(nextSymbols.has(hit.id) ? hit.id : nextSymbols.values().next().value ?? null);
+      activeSymbolIdRef.current = nextSymbols.has(hit.id) ? hit.id : nextSymbols.values().next().value ?? null;
+      return;
+    }
+
+    const nextCircles = new Set(selectedCircleIdsRef.current);
+
+    if (nextCircles.has(hit.id)) {
+      nextCircles.delete(hit.id);
+    } else {
+      nextCircles.add(hit.id);
+    }
+
+    selectedCircleIdsRef.current = nextCircles;
+    setSelectedCircleIds(nextCircles);
+    setSelectedCircleId(nextCircles.has(hit.id) ? hit.id : nextCircles.values().next().value ?? null);
+    selectedCircleIdRef.current = nextCircles.has(hit.id) ? hit.id : nextCircles.values().next().value ?? null;
+  }
+
   function selectComponentAt(point: Point) {
     const hit = hitTestComponents(point, symbols, circles);
 
-    activeSymbolIdRef.current = hit?.type === "symbol" ? hit.id : null;
-    selectedCircleIdRef.current = hit?.type === "circle" ? hit.id : null;
-    setActiveSymbolId(hit?.type === "symbol" ? hit.id : null);
-    setSelectedCircleId(hit?.type === "circle" ? hit.id : null);
+    setSingleSelection(hit);
     setToolMode("select");
     setMatches([]);
     setStatus(hit ? "Selected component." : "No component selected.");
@@ -1641,8 +1924,12 @@ export default function DrawingIdentifier() {
     );
     activeSymbolIdRef.current = null;
     selectedCircleIdRef.current = null;
+    selectedSymbolIdsRef.current = new Set();
+    selectedCircleIdsRef.current = new Set();
     setActiveSymbolId(null);
     setSelectedCircleId(null);
+    setSelectedSymbolIds(new Set());
+    setSelectedCircleIds(new Set());
     setMatches([]);
     setStatus("Erased ink.");
   }
@@ -1674,6 +1961,34 @@ export default function DrawingIdentifier() {
     drawingRef.current = true;
 
     if (toolMode === "select") {
+      const hit = hitTestComponents(point, symbols, circles);
+      const isAdditive = event.ctrlKey || event.metaKey || event.shiftKey;
+
+      if (isAdditive && hit) {
+        toggleSelection(hit);
+        setToolMode("select");
+        setMatches([]);
+        setStatus("Selection updated.");
+        return;
+      }
+
+      if (
+        hit &&
+        selectedCount > 1 &&
+        ((hit.type === "symbol" && selectedSymbolIds.has(hit.id)) ||
+          (hit.type === "circle" && selectedCircleIds.has(hit.id)))
+      ) {
+        const moveIds = expandedMoveSelectionIds();
+
+        interactionRef.current = {
+          mode: "move-selection",
+          lastPoint: point,
+          ...moveIds,
+        };
+        setStatus(`Moving ${selectedCount} selected component${selectedCount === 1 ? "" : "s"}.`);
+        return;
+      }
+
       const handle = selectedHandleAt(point, selectedSymbol, selectedCircle);
 
       if (handle) {
@@ -1720,7 +2035,26 @@ export default function DrawingIdentifier() {
         return;
       }
 
-      selectComponentAt(point);
+      if (hit) {
+        setSingleSelection(hit);
+        setToolMode("select");
+        setMatches([]);
+        setStatus("Selected component.");
+        return;
+      }
+
+      interactionRef.current = {
+        mode: "box-select",
+        startPoint: point,
+        currentPoint: point,
+        additive: isAdditive,
+      };
+      setSelectionBox({ start: point, current: point });
+      if (!isAdditive) {
+        setSingleSelection(null);
+      }
+      setMatches([]);
+      setStatus("Drag to select components.");
       return;
     }
 
@@ -1742,8 +2076,12 @@ export default function DrawingIdentifier() {
 
         activeSymbolIdRef.current = nextSymbol.id;
         selectedCircleIdRef.current = null;
+        selectedSymbolIdsRef.current = new Set([nextSymbol.id]);
+        selectedCircleIdsRef.current = new Set();
         setActiveSymbolId(nextSymbol.id);
         setSelectedCircleId(null);
+        setSelectedSymbolIds(new Set([nextSymbol.id]));
+        setSelectedCircleIds(new Set());
         return [...current, nextSymbol];
       }
 
@@ -1798,10 +2136,60 @@ export default function DrawingIdentifier() {
     changeZoom(zoom + (event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP));
   }
 
+  function expandedMoveSelectionIds() {
+    const circleIds = new Set(selectedCircleIdsRef.current);
+    const symbolIds = new Set(selectedSymbolIdsRef.current);
+
+    for (const circleIdValue of selectedCircleIdsRef.current) {
+      const groupIds = circleGroupIds(circleIdValue, circles);
+
+      for (const groupId of groupIds) {
+        circleIds.add(groupId);
+      }
+
+      for (const symbolIdValue of symbolIdsInCircleGroup(groupIds, symbols, circles)) {
+        symbolIds.add(symbolIdValue);
+      }
+    }
+
+    return {
+      circleIds: [...circleIds],
+      symbolIds: [...symbolIds],
+    };
+  }
+
   function updateInteraction(point: Point) {
     const interaction = interactionRef.current;
 
     if (!interaction) {
+      return;
+    }
+
+    if (interaction.mode === "box-select") {
+      interactionRef.current = { ...interaction, currentPoint: point };
+      setSelectionBox({ start: interaction.startPoint, current: point });
+      return;
+    }
+
+    if (interaction.mode === "move-selection") {
+      const dx = point.x - interaction.lastPoint.x;
+      const dy = point.y - interaction.lastPoint.y;
+      const circleIds = new Set(interaction.circleIds);
+      const symbolIds = new Set(interaction.symbolIds);
+
+      interactionRef.current = { ...interaction, lastPoint: point };
+      setSymbols((current) =>
+        current.map((symbol) =>
+          symbolIds.has(symbol.id) ? moveSymbol(symbol, dx, dy) : symbol,
+        ),
+      );
+      setCircles((current) =>
+        reparentCircles(
+          current.map((circle) =>
+            circleIds.has(circle.id) ? moveCircle(circle, dx, dy) : circle,
+          ),
+        ),
+      );
       return;
     }
 
@@ -2007,8 +2395,12 @@ export default function DrawingIdentifier() {
     triggerCircleGlow(nextCircle.id);
     activeSymbolIdRef.current = null;
     selectedCircleIdRef.current = nextCircle.id;
+    selectedSymbolIdsRef.current = new Set();
+    selectedCircleIdsRef.current = new Set([nextCircle.id]);
     setActiveSymbolId(null);
     setSelectedCircleId(nextCircle.id);
+    setSelectedSymbolIds(new Set());
+    setSelectedCircleIds(new Set([nextCircle.id]));
     setMatches([]);
     setStatus(
       `Closed boundary stored as a spell. Boundary quality ${Math.round(
@@ -2023,6 +2415,47 @@ export default function DrawingIdentifier() {
     drawingRef.current = false;
 
     if (interactionRef.current) {
+      const interaction = interactionRef.current;
+
+      if (interaction.mode === "box-select") {
+        const box = selectionRectFromPoints(interaction.startPoint, interaction.currentPoint);
+        const dragged =
+          Math.abs(box.maxX - box.minX) > 6 || Math.abs(box.maxY - box.minY) > 6;
+
+        if (dragged) {
+          const ids = componentIdsInSelectionBox(box, symbols, circles);
+          const nextSymbolIds = interaction.additive
+            ? new Set([...selectedSymbolIdsRef.current, ...ids.symbolIds])
+            : new Set(ids.symbolIds);
+          const nextCircleIds = interaction.additive
+            ? new Set([...selectedCircleIdsRef.current, ...ids.circleIds])
+            : new Set(ids.circleIds);
+          const nextActiveId = nextSymbolIds.values().next().value ?? null;
+          const nextCircleId = nextActiveId
+            ? null
+            : nextCircleIds.values().next().value ?? null;
+
+          selectedSymbolIdsRef.current = nextSymbolIds;
+          selectedCircleIdsRef.current = nextCircleIds;
+          activeSymbolIdRef.current = nextActiveId;
+          selectedCircleIdRef.current = nextCircleId;
+          setSelectedSymbolIds(nextSymbolIds);
+          setSelectedCircleIds(nextCircleIds);
+          setActiveSymbolId(nextActiveId);
+          setSelectedCircleId(nextCircleId);
+          setStatus(
+            `Selected ${nextSymbolIds.size + nextCircleIds.size} component${
+              nextSymbolIds.size + nextCircleIds.size === 1 ? "" : "s"
+            }.`,
+          );
+        } else if (!interaction.additive) {
+          setSingleSelection(null);
+          setStatus("Selection cleared.");
+        }
+
+        setSelectionBox(null);
+      }
+
       interactionRef.current = null;
     }
 
@@ -2057,6 +2490,7 @@ export default function DrawingIdentifier() {
           ? {
               ...symbol,
               marks: [],
+              rotation: match.detectedRotation,
               parentCircleId: findContainingCircle(
                 {
                   x: rect.x + rect.size / 2,
@@ -2072,6 +2506,10 @@ export default function DrawingIdentifier() {
           : symbol,
       ),
     );
+    selectedSymbolIdsRef.current = new Set([activeSymbol.id]);
+    selectedCircleIdsRef.current = new Set();
+    setSelectedSymbolIds(new Set([activeSymbol.id]));
+    setSelectedCircleIds(new Set());
     setMatches([]);
     setStatus(`Changed active symbol to ${match.name}. Draw again to add another symbol.`);
   }
@@ -2114,19 +2552,39 @@ export default function DrawingIdentifier() {
     setSymbols((current) => [...current, nextSymbol]);
     activeSymbolIdRef.current = nextSymbol.id;
     selectedCircleIdRef.current = null;
+    selectedSymbolIdsRef.current = new Set([nextSymbol.id]);
+    selectedCircleIdsRef.current = new Set();
     setActiveSymbolId(nextSymbol.id);
     setSelectedCircleId(null);
+    setSelectedSymbolIds(new Set([nextSymbol.id]));
+    setSelectedCircleIds(new Set());
     setToolMode("select");
     setMatches([]);
     setStatus(`Placed ${reference.name} on the canvas.`);
   }
 
   async function importSpellImage(file: File) {
+    const updateImportState = async (nextState: ImportState) => {
+      setImportState(nextState);
+      setStatus(`${nextState.phase}: ${nextState.detail}`);
+      await waitForPaint();
+    };
+
+    await updateImportState({
+      phase: "Importing spell",
+      detail: "Loading image...",
+      progress: 0.08,
+    });
+
     const url = URL.createObjectURL(file);
     const image = new window.Image();
-    image.src = url;
-    await image.decode();
-    URL.revokeObjectURL(url);
+
+    try {
+      image.src = url;
+      await image.decode();
+    } finally {
+      URL.revokeObjectURL(url);
+    }
 
     const importCanvas = createCanvas(CANVAS_SIZE);
     const context = importCanvas.getContext("2d", { willReadFrequently: true });
@@ -2137,6 +2595,11 @@ export default function DrawingIdentifier() {
 
     context.fillStyle = "#ffffff";
     context.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    await updateImportState({
+      phase: "Importing spell",
+      detail: "Fitting image into the spell circle...",
+      progress: 0.16,
+    });
 
     const scale = Math.min(CANVAS_SIZE / image.naturalWidth, CANVAS_SIZE / image.naturalHeight);
     const width = image.naturalWidth * scale;
@@ -2147,7 +2610,14 @@ export default function DrawingIdentifier() {
     context.drawImage(image, x, y, width, height);
 
     const imageData = context.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    await updateImportState({
+      phase: "Importing spell",
+      detail: "Vectorizing black ink...",
+      progress: 0.26,
+    });
     const importedLayerDataUrl = thresholdLayerDataUrl(imageData);
+    const outerCircle = outerCircleFromImportedInk(imageData);
+    const ignoredCircleStrokes = outerCircle ? [outerCircle] : [];
     const visited = new Uint8Array(CANVAS_SIZE * CANVAS_SIZE);
     const isInk = (px: number, py: number) => {
       if (px < 0 || py < 0 || px >= CANVAS_SIZE || py >= CANVAS_SIZE) {
@@ -2160,11 +2630,25 @@ export default function DrawingIdentifier() {
         (imageData.data[index] + imageData.data[index + 1] + imageData.data[index + 2]) /
           3;
 
-      return imageData.data[index + 3] > 24 && darkness > 70;
+      if (imageData.data[index + 3] <= 24 || darkness <= 70) {
+        return false;
+      }
+
+      return !ignoredCircleStrokes.some((circle) =>
+        pointIsOnImportedCircleStroke({ x: px, y: py }, circle),
+      );
     };
     const components: Point[][] = [];
 
     for (let py = 0; py < CANVAS_SIZE; py += 1) {
+      if (py % 32 === 0) {
+        await updateImportState({
+          phase: "Importing spell",
+          detail: `Finding ink components (${Math.round((py / CANVAS_SIZE) * 100)}%)...`,
+          progress: 0.28 + (py / CANVAS_SIZE) * 0.24,
+        });
+      }
+
       for (let px = 0; px < CANVAS_SIZE; px += 1) {
         const startIndex = py * CANVAS_SIZE + px;
 
@@ -2215,10 +2699,26 @@ export default function DrawingIdentifier() {
       }
     }
 
-    const importedCircles: CircleComponent[] = [];
-    const importedSymbols: DrawnSymbol[] = [];
+    await updateImportState({
+      phase: "Importing spell",
+      detail: `Found ${components.length} ink component${components.length === 1 ? "" : "s"}.`,
+      progress: 0.54,
+    });
 
-    for (const points of components) {
+    const importedCircles: CircleComponent[] = outerCircle ? [outerCircle] : [];
+    const importedSymbols: DrawnSymbol[] = [];
+    let attemptedMatches = 0;
+    let skippedStructuralComponents = 0;
+
+    for (const [componentIndex, points] of components.entries()) {
+      if (componentIndex % 4 === 0) {
+        await updateImportState({
+          phase: "Importing spell",
+          detail: `Classifying component ${componentIndex + 1} of ${components.length}...`,
+          progress: 0.56 + (componentIndex / Math.max(1, components.length)) * 0.32,
+        });
+      }
+
       const xs = points.map((point) => point.x);
       const ys = points.map((point) => point.y);
       const rect = rectFromBounds(
@@ -2230,21 +2730,40 @@ export default function DrawingIdentifier() {
       const circle = circleFromImportedComponent(points, rect);
 
       if (circle) {
-        importedCircles.push(circle);
+        if (!importedCircles.some((importedCircle) => circlesAreSimilar(importedCircle, circle))) {
+          importedCircles.push(circle);
+        }
+        continue;
+      }
+
+      if (!shouldCreateImportedComponent(points, rect)) {
+        skippedStructuralComponents += 1;
         continue;
       }
 
       const marks = marksFromImportedPixels(points);
-      const match = bestReferenceMatch(marks, preparedRef.current);
+      const canMatch =
+        shouldAttemptImportMatch(points, rect) &&
+        attemptedMatches < IMPORT_SYMBOL_MATCH_LIMIT;
+      const match = canMatch ? bestReferenceMatch(marks, preparedRef.current) : null;
       const center = {
         x: rect.x + rect.size / 2,
         y: rect.y + rect.size / 2,
       };
 
+      if (canMatch) {
+        attemptedMatches += 1;
+      }
+
+      const confidentMatch = isConfidentImportMatch(match);
+
       importedSymbols.push({
         id: symbolId(),
-        marks: match && match.score >= IMPORT_MATCH_THRESHOLD ? [] : marks,
-        rotation: estimateComponentRotation(points),
+        marks: confidentMatch ? [] : marks,
+        rotation:
+          confidentMatch && match
+            ? match.detectedRotation
+            : estimateComponentRotation(points),
         scale: 1,
         tweaks: {
           inverted: false,
@@ -2254,12 +2773,12 @@ export default function DrawingIdentifier() {
         imported: {
           source: "image",
           confidence: Number((match?.score ?? 0).toFixed(3)),
-          matchId: match?.id,
-          matchName: match?.name,
+          matchId: confidentMatch ? match?.id : undefined,
+          matchName: confidentMatch ? match?.name : undefined,
           bounds: rect,
         },
         replacement:
-          match && match.score >= IMPORT_MATCH_THRESHOLD
+          confidentMatch && match
             ? {
                 reference: match,
                 rect,
@@ -2274,6 +2793,12 @@ export default function DrawingIdentifier() {
       ...symbol,
       parentCircleId: findContainingCircle(symbolCenter(symbol), nextCircles),
     }));
+
+    await updateImportState({
+      phase: "Importing spell",
+      detail: "Placing spell on the canvas...",
+      progress: 0.94,
+    });
 
     setCircles(nextCircles);
     if (importedLayerDataUrl) {
@@ -2290,12 +2815,28 @@ export default function DrawingIdentifier() {
     activeSymbolIdRef.current = nextSymbols[0]?.id ?? null;
     setSelectedCircleId(nextSymbols.length === 0 ? nextCircles[0]?.id ?? null : null);
     selectedCircleIdRef.current = nextSymbols.length === 0 ? nextCircles[0]?.id ?? null : null;
+    setSelectedSymbolIds(nextSymbols[0] ? new Set([nextSymbols[0].id]) : new Set());
+    selectedSymbolIdsRef.current = nextSymbols[0] ? new Set([nextSymbols[0].id]) : new Set();
+    setSelectedCircleIds(
+      nextSymbols.length === 0 && nextCircles[0] ? new Set([nextCircles[0].id]) : new Set(),
+    );
+    selectedCircleIdsRef.current =
+      nextSymbols.length === 0 && nextCircles[0] ? new Set([nextCircles[0].id]) : new Set();
     setToolMode("select");
     setMatches([]);
+    setZoom(Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, IMPORT_ARRIVAL_ZOOM)));
+    centerCanvasViewport();
+    setImportState(null);
     setStatus(
       `Imported ${importedCircles.length} possible spell circle${
         importedCircles.length === 1 ? "" : "s"
-      } and ${nextSymbols.length} symbol component${nextSymbols.length === 1 ? "" : "s"}.`,
+      } and ${nextSymbols.length} symbol component${
+        nextSymbols.length === 1 ? "" : "s"
+      }. Matched ${attemptedMatches} likely symbol-sized component${
+        attemptedMatches === 1 ? "" : "s"
+      }; ${skippedStructuralComponents} oversized structural component${
+        skippedStructuralComponents === 1 ? " was" : "s were"
+      } preserved only as imported ink.`,
     );
   }
 
@@ -2307,12 +2848,33 @@ export default function DrawingIdentifier() {
     }
 
     importSpellImage(file).catch(() => {
+      setImportState(null);
       setStatus("Could not import that image.");
     });
     event.target.value = "";
   }
 
   function copySelection() {
+    if (selectedCount > 1) {
+      const selectedSymbols = symbols
+        .filter((symbol) => selectedSymbolIds.has(symbol.id))
+        .map((symbol) => cloneSymbolWithOffset(symbol, { x: 0, y: 0 }, symbol.id, symbol.parentCircleId));
+      const selectedCircles = circles
+        .filter((circle) => selectedCircleIds.has(circle.id))
+        .map((circle) =>
+          cloneCircleWithOffset(circle, { x: 0, y: 0 }, circle.id, circle.parentCircleId),
+        );
+
+      setClipboard({
+        type: "selection",
+        circles: selectedCircles,
+        symbols: selectedSymbols,
+      });
+      pasteCountRef.current = 1;
+      setStatus(`Copied ${selectedSymbols.length + selectedCircles.length} selected components.`);
+      return;
+    }
+
     if (selectedSymbol) {
       setClipboard({
         type: "symbol",
@@ -2363,6 +2925,13 @@ export default function DrawingIdentifier() {
     }
   }
 
+  function copyGrammarText() {
+    navigator.clipboard
+      .writeText(spellGrammarText)
+      .then(() => setStatus("Copied spell grammar text."))
+      .catch(() => setStatus("Could not copy spell grammar text."));
+  }
+
   function pasteClipboard() {
     if (!clipboard) {
       return;
@@ -2382,11 +2951,64 @@ export default function DrawingIdentifier() {
       setSymbols((current) => [...current, nextSymbol]);
       activeSymbolIdRef.current = nextSymbol.id;
       selectedCircleIdRef.current = null;
+      selectedSymbolIdsRef.current = new Set([nextSymbol.id]);
+      selectedCircleIdsRef.current = new Set();
       setActiveSymbolId(nextSymbol.id);
       setSelectedCircleId(null);
+      setSelectedSymbolIds(new Set([nextSymbol.id]));
+      setSelectedCircleIds(new Set());
       setToolMode("select");
       setMatches([]);
       setStatus("Pasted symbol copy.");
+      return;
+    }
+
+    if (clipboard.type === "selection") {
+      const circleIdMap = new Map(
+        clipboard.circles.map((circle) => [circle.id, circleId()] as const),
+      );
+      const pastedCircles = clipboard.circles.map((circle) =>
+        cloneCircleWithOffset(
+          circle,
+          offset,
+          circleIdMap.get(circle.id) ?? circleId(),
+          circle.parentCircleId ? circleIdMap.get(circle.parentCircleId) : undefined,
+        ),
+      );
+      const nextCircles = reparentCircles([...circles, ...pastedCircles]);
+      const pastedSymbols = clipboard.symbols.map((symbol) => {
+        const pastedSymbol = cloneSymbolWithOffset(
+          symbol,
+          offset,
+          symbolId(),
+          symbol.parentCircleId ? circleIdMap.get(symbol.parentCircleId) : undefined,
+        );
+
+        return {
+          ...pastedSymbol,
+          parentCircleId:
+            pastedSymbol.parentCircleId ??
+            findContainingCircle(symbolCenter(pastedSymbol), nextCircles),
+        };
+      });
+      const nextSymbolIds = new Set(pastedSymbols.map((symbol) => symbol.id));
+      const nextCircleIds = new Set(pastedCircles.map((circle) => circle.id));
+      const nextActiveId = nextSymbolIds.values().next().value ?? null;
+      const nextCircleId = nextActiveId ? null : nextCircleIds.values().next().value ?? null;
+
+      setCircles(nextCircles);
+      setSymbols((current) => [...current, ...pastedSymbols]);
+      activeSymbolIdRef.current = nextActiveId;
+      selectedCircleIdRef.current = nextCircleId;
+      selectedSymbolIdsRef.current = nextSymbolIds;
+      selectedCircleIdsRef.current = nextCircleIds;
+      setActiveSymbolId(nextActiveId);
+      setSelectedCircleId(nextCircleId);
+      setSelectedSymbolIds(nextSymbolIds);
+      setSelectedCircleIds(nextCircleIds);
+      setToolMode("select");
+      setMatches([]);
+      setStatus(`Pasted ${pastedSymbols.length + pastedCircles.length} selected components.`);
       return;
     }
 
@@ -2423,8 +3045,12 @@ export default function DrawingIdentifier() {
     setSymbols((current) => [...current, ...pastedSymbols]);
     activeSymbolIdRef.current = null;
     selectedCircleIdRef.current = nextRootId;
+    selectedSymbolIdsRef.current = new Set();
+    selectedCircleIdsRef.current = nextRootId ? new Set([nextRootId]) : new Set();
     setActiveSymbolId(null);
     setSelectedCircleId(nextRootId);
+    setSelectedSymbolIds(new Set());
+    setSelectedCircleIds(nextRootId ? new Set([nextRootId]) : new Set());
     setToolMode("select");
     setMatches([]);
     setStatus(
@@ -2435,12 +3061,50 @@ export default function DrawingIdentifier() {
   }
 
   function deleteSelection() {
+    if (selectedCount > 1) {
+      const selectedCircleGroupIds = new Set<string>();
+
+      for (const id of selectedCircleIds) {
+        for (const groupId of circleGroupIds(id, circles)) {
+          selectedCircleGroupIds.add(groupId);
+        }
+      }
+
+      setCircles((current) =>
+        reparentCircles(current.filter((circle) => !selectedCircleGroupIds.has(circle.id))),
+      );
+      setSymbols((current) =>
+        current.filter((symbol) => {
+          if (selectedSymbolIds.has(symbol.id)) {
+            return false;
+          }
+
+          const parentId = symbolParentId(symbol, circles);
+
+          return !parentId || !selectedCircleGroupIds.has(parentId);
+        }),
+      );
+      activeSymbolIdRef.current = null;
+      selectedCircleIdRef.current = null;
+      selectedSymbolIdsRef.current = new Set();
+      selectedCircleIdsRef.current = new Set();
+      setActiveSymbolId(null);
+      setSelectedCircleId(null);
+      setSelectedSymbolIds(new Set());
+      setSelectedCircleIds(new Set());
+      setMatches([]);
+      setStatus(`Deleted ${selectedCount} selected components.`);
+      return;
+    }
+
     if (selectedSymbol) {
       const deletedId = selectedSymbol.id;
 
       setSymbols((current) => current.filter((symbol) => symbol.id !== deletedId));
       activeSymbolIdRef.current = null;
+      selectedSymbolIdsRef.current = new Set();
       setActiveSymbolId(null);
+      setSelectedSymbolIds(new Set());
       setMatches([]);
       setStatus("Deleted selected symbol.");
       return;
@@ -2460,7 +3124,9 @@ export default function DrawingIdentifier() {
         }),
       );
       selectedCircleIdRef.current = null;
+      selectedCircleIdsRef.current = new Set();
       setSelectedCircleId(null);
+      setSelectedCircleIds(new Set());
       setMatches([]);
       setStatus("Deleted selected spell boundary.");
     }
@@ -2521,8 +3187,12 @@ export default function DrawingIdentifier() {
         event.preventDefault();
         activeSymbolIdRef.current = null;
         selectedCircleIdRef.current = null;
+        selectedSymbolIdsRef.current = new Set();
+        selectedCircleIdsRef.current = new Set();
         setActiveSymbolId(null);
         setSelectedCircleId(null);
+        setSelectedSymbolIds(new Set());
+        setSelectedCircleIds(new Set());
         setMatches([]);
         setStatus("Selection cleared.");
       }
@@ -2564,6 +3234,12 @@ export default function DrawingIdentifier() {
     setImportedInkLayers([]);
     setActiveSymbolId(null);
     setSelectedCircleId(null);
+    setSelectedSymbolIds(new Set());
+    setSelectedCircleIds(new Set());
+    activeSymbolIdRef.current = null;
+    selectedCircleIdRef.current = null;
+    selectedSymbolIdsRef.current = new Set();
+    selectedCircleIdsRef.current = new Set();
     setMatches([]);
     setStatus(
       isReady
@@ -2582,6 +3258,65 @@ export default function DrawingIdentifier() {
     setSymbols((current) =>
       current.map((symbol) => (symbol.id === activeSymbolId ? updater(symbol) : symbol)),
     );
+  }
+
+  function changeSelectedSymbolReference(referenceValue: string) {
+    const reference = preparedSymbols.find((item) => referenceKey(item) === referenceValue);
+
+    if (!activeSymbolId || !reference) {
+      return;
+    }
+
+    setSymbols((current) =>
+      current.map((symbol) => {
+        if (symbol.id !== activeSymbolId) {
+          return symbol;
+        }
+
+        const box = symbolVisualBox(symbol);
+        const rect =
+          symbol.replacement?.rect ??
+          replacementRect(symbol.marks) ??
+          (box
+            ? {
+                x: box.center.x - box.size / 2,
+                y: box.center.y - box.size / 2,
+                size: Math.max(36, box.size),
+              }
+            : {
+                x: CANVAS_CENTER.x - 37,
+                y: CANVAS_CENTER.y - 37,
+                size: 74,
+              });
+
+        return {
+          ...symbol,
+          marks: [],
+          parentCircleId: findContainingCircle(
+            {
+              x: rect.x + rect.size / 2,
+              y: rect.y + rect.size / 2,
+            },
+            circles,
+          ),
+          replacement: {
+            reference,
+            rect,
+          },
+          imported: symbol.imported
+            ? {
+                ...symbol.imported,
+                confidence: 1,
+                matchId: reference.id,
+                matchName: reference.name,
+              }
+            : symbol.imported,
+        };
+      }),
+    );
+    setMatches([]);
+    setShowChangeSymbolPicker(false);
+    setStatus(`Changed selected symbol to ${reference.name}.`);
   }
 
   function updateSelectedCircle(
@@ -2624,6 +3359,22 @@ export default function DrawingIdentifier() {
 
   function changeZoom(nextZoom: number) {
     setZoom(Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, nextZoom)));
+  }
+
+  function centerCanvasViewport() {
+    window.requestAnimationFrame(() => {
+      const viewport = canvasViewportRef.current;
+
+      if (!viewport) {
+        return;
+      }
+
+      viewport.scrollTo({
+        left: Math.max(0, (viewport.scrollWidth - viewport.clientWidth) / 2),
+        top: Math.max(0, (viewport.scrollHeight - viewport.clientHeight) / 2),
+        behavior: "smooth",
+      });
+    });
   }
 
   const selectedSymbolCenter = selectedSymbol ? symbolCenter(selectedSymbol) : null;
@@ -2782,8 +3533,9 @@ export default function DrawingIdentifier() {
               </div>
 
               <div
+                ref={canvasViewportRef}
                 onWheel={handleCanvasWheel}
-                className="h-[72vh] min-h-96 overflow-auto rounded border border-stone-300 bg-stone-200 p-6 shadow-inner"
+                className="relative h-[72vh] min-h-96 overflow-auto rounded border border-stone-300 bg-stone-200 p-6 shadow-inner"
               >
                 <div className="grid min-h-full min-w-full place-items-center">
                   <canvas
@@ -2811,6 +3563,32 @@ export default function DrawingIdentifier() {
                     aria-label="Drawing canvas"
                   />
                 </div>
+                {importState ? (
+                  <div className="absolute inset-0 z-10 grid place-items-center bg-stone-950/45 p-6 backdrop-blur-[2px]">
+                    <div className="w-full max-w-sm rounded-md border border-stone-200 bg-white p-5 shadow-xl">
+                      <div className="mb-4 flex items-center gap-3">
+                        <div className="h-9 w-9 animate-spin rounded-full border-4 border-stone-200 border-t-stone-950" />
+                        <div>
+                          <p className="text-sm font-semibold text-stone-950">
+                            {importState.phase}
+                          </p>
+                          <p className="text-sm font-medium text-stone-600">
+                            {importState.detail}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-stone-200">
+                        <div
+                          className="h-full rounded-full bg-stone-950 transition-all duration-300"
+                          style={{ width: `${Math.round(importState.progress * 100)}%` }}
+                        />
+                      </div>
+                      <p className="mt-3 text-xs font-semibold uppercase text-stone-500">
+                        {Math.round(importState.progress * 100)}%
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
 
@@ -2825,10 +3603,15 @@ export default function DrawingIdentifier() {
               <button
                 type="button"
                 onClick={() => importInputRef.current?.click()}
-                className="inline-flex h-11 items-center gap-2 rounded border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-700 transition hover:border-amber-600 hover:text-stone-950"
+                disabled={Boolean(importState)}
+                className="inline-flex h-11 items-center gap-2 rounded border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-700 transition hover:border-amber-600 hover:text-stone-950 disabled:cursor-wait disabled:text-stone-400"
               >
-                <Upload className="h-4 w-4" aria-hidden="true" />
-                Import spell
+                {importState ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-stone-300 border-t-stone-950" />
+                ) : (
+                  <Upload className="h-4 w-4" aria-hidden="true" />
+                )}
+                {importState ? "Importing..." : "Import spell"}
               </button>
               <button
                 type="button"
@@ -2863,7 +3646,7 @@ export default function DrawingIdentifier() {
               <button
                 type="button"
                 onClick={copySelection}
-                disabled={!selectedSymbol && !selectedCircle}
+                disabled={!hasSelection}
                 className="inline-flex h-11 items-center gap-2 rounded border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-700 transition hover:border-amber-600 hover:text-stone-950 disabled:cursor-not-allowed disabled:text-stone-400"
               >
                 <Copy className="h-4 w-4" aria-hidden="true" />
@@ -2993,6 +3776,9 @@ export default function DrawingIdentifier() {
                           <p className="text-sm font-semibold text-amber-800">
                             {Math.round(match.score * 100)}% match
                           </p>
+                          <p className="text-xs font-medium text-stone-500">
+                            Angle {match.detectedRotation} deg
+                          </p>
                         </div>
                       </div>
                     </button>
@@ -3010,7 +3796,20 @@ export default function DrawingIdentifier() {
                 Selected Component
               </h2>
 
-              {selectedSymbol ? (
+              {selectedCount > 1 ? (
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold text-stone-950">
+                    {selectedCount} components selected
+                  </p>
+                  <div className="rounded bg-stone-100 p-3 text-sm text-stone-700">
+                    <p>{selectedSymbolIds.size} symbol(s)</p>
+                    <p>{selectedCircleIds.size} spell circle(s)</p>
+                  </div>
+                  <p className="text-sm font-medium text-stone-600">
+                    Drag any selected component to move the whole selection. Use Ctrl-click to add or remove individual components.
+                  </p>
+                </div>
+              ) : selectedSymbol ? (
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm font-semibold text-stone-950">
@@ -3019,6 +3818,78 @@ export default function DrawingIdentifier() {
                     <p className="text-xs font-medium uppercase text-stone-500">
                       {selectedSymbol.replacement?.reference.type ?? "unidentified"} component
                     </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-stone-700">Change symbol</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowChangeSymbolPicker((current) => !current)}
+                      className="flex w-full items-center justify-between gap-3 rounded border border-stone-300 bg-white p-2 text-left text-sm font-medium text-stone-800 transition hover:border-stone-950"
+                    >
+                      <span className="flex min-w-0 items-center gap-3">
+                        {selectedSymbol.replacement?.reference.assetPath ? (
+                          <Image
+                            src={selectedSymbol.replacement.reference.assetPath}
+                            alt={selectedSymbol.replacement.reference.name}
+                            width={36}
+                            height={36}
+                            className="h-9 w-9 shrink-0 object-contain"
+                          />
+                        ) : (
+                          <span className="grid h-9 w-9 shrink-0 place-items-center rounded border border-dashed border-stone-300 text-[9px] font-semibold uppercase text-stone-500">
+                            none
+                          </span>
+                        )}
+                        <span className="min-w-0">
+                          <span className="block truncate">
+                            {selectedSymbol.replacement?.reference.name ?? "Choose a known sign or sigil"}
+                          </span>
+                          <span className="block text-xs font-semibold uppercase text-stone-500">
+                            {selectedSymbol.replacement?.reference.type ?? "unidentified"}
+                          </span>
+                        </span>
+                      </span>
+                      <span className="text-xs font-semibold uppercase text-stone-500">
+                        {showChangeSymbolPicker ? "Close" : "Open"}
+                      </span>
+                    </button>
+                    {showChangeSymbolPicker ? (
+                      <div className="max-h-72 overflow-auto rounded border border-stone-300 bg-white p-2 shadow-sm">
+                        <div className="grid grid-cols-1 gap-2">
+                          {preparedSymbols.map((reference) => (
+                            <button
+                              key={referenceKey(reference)}
+                              type="button"
+                              onClick={() => changeSelectedSymbolReference(referenceKey(reference))}
+                              className="flex min-h-14 items-center gap-3 rounded border border-stone-200 bg-stone-50 p-2 text-left transition hover:border-stone-950 hover:bg-white"
+                            >
+                              {reference.assetPath ? (
+                                <Image
+                                  src={reference.assetPath}
+                                  alt={reference.name}
+                                  width={40}
+                                  height={40}
+                                  className="h-10 w-10 shrink-0 object-contain"
+                                />
+                              ) : (
+                                <span className="grid h-10 w-10 shrink-0 place-items-center rounded border border-dashed border-stone-300 text-[9px] font-semibold uppercase text-stone-500">
+                                  none
+                                </span>
+                              )}
+                              <span className="min-w-0">
+                                <span className="block truncate text-sm font-semibold text-stone-950">
+                                  {reference.name}
+                                </span>
+                                <span className="block text-xs font-semibold uppercase text-stone-500">
+                                  {reference.type} / {categoryLabel(reference.category)}
+                                </span>
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
 
                   <label className="block text-sm font-semibold text-stone-700">
@@ -3239,6 +4110,23 @@ export default function DrawingIdentifier() {
 
             <div className="rounded-md border border-stone-300 bg-white p-5 shadow-sm">
               <div className="mb-3 flex items-center justify-between gap-2">
+                <h2 className="text-xl font-semibold text-stone-950">Spell Grammar</h2>
+                <button
+                  type="button"
+                  onClick={copyGrammarText}
+                  className="inline-flex items-center gap-1.5 rounded border border-stone-300 bg-white px-2.5 py-1 text-xs font-semibold uppercase text-stone-600 transition hover:border-amber-600 hover:text-stone-950"
+                >
+                  <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                  Copy
+                </button>
+              </div>
+              <pre className="max-h-72 whitespace-pre-wrap overflow-auto rounded bg-stone-100 p-3 text-xs leading-5 text-stone-800">
+                {spellGrammarText}
+              </pre>
+            </div>
+
+            <div className="rounded-md border border-stone-300 bg-white p-5 shadow-sm">
+              <div className="mb-3 flex items-center justify-between gap-2">
                 <h2 className="text-xl font-semibold text-stone-950">Spell Data</h2>
                 <span className="rounded bg-stone-100 px-2.5 py-1 text-xs font-semibold uppercase text-stone-600">
                   JSON
@@ -3304,6 +4192,9 @@ async function redrawSpellCanvas({
   importedInkLayers,
   selectedSymbolId,
   selectedCircleId,
+  selectedSymbolIds,
+  selectedCircleIds,
+  selectionBox,
   glowingCircleIds,
   canvas,
   imageCache,
@@ -3314,6 +4205,9 @@ async function redrawSpellCanvas({
   importedInkLayers: ImportedInkLayer[];
   selectedSymbolId: string | null;
   selectedCircleId: string | null;
+  selectedSymbolIds: Set<string>;
+  selectedCircleIds: Set<string>;
+  selectionBox: SelectionBox | null;
   glowingCircleIds: Set<string>;
   canvas: HTMLCanvasElement | null;
   imageCache: Map<string, HTMLImageElement>;
@@ -3342,11 +4236,17 @@ async function redrawSpellCanvas({
     context.drawImage(image, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
   }
 
+  for (const symbol of symbols) {
+    if (symbol.imported) {
+      eraseImportedSymbolPatch(context, symbol);
+    }
+  }
+
   for (const circle of circles) {
     drawCircleComponent(
       context,
       circle,
-      circle.id === selectedCircleId,
+      circle.id === selectedCircleId || selectedCircleIds.has(circle.id),
       glowingCircleIds.has(circle.id),
     );
   }
@@ -3356,11 +4256,6 @@ async function redrawSpellCanvas({
       return;
     }
 
-    if (symbol.imported) {
-      drawSymbolSelection(context, symbol, symbol.id === selectedSymbolId);
-      continue;
-    }
-
     if (symbol.replacement?.reference.assetPath) {
       const image = await cachedImage(symbol.replacement.reference.assetPath, imageCache);
 
@@ -3368,12 +4263,25 @@ async function redrawSpellCanvas({
         return;
       }
 
-      drawReplacementSymbol(context, image, symbol, symbol.id === selectedSymbolId);
+      drawReplacementSymbol(
+        context,
+        image,
+        symbol,
+        symbol.id === selectedSymbolId || selectedSymbolIds.has(symbol.id),
+      );
       continue;
     }
 
     drawSymbolMarks(context, symbol.marks, symbol.imported ? IMPORT_LINE_WIDTH : DRAW_LINE_WIDTH);
-    drawSymbolSelection(context, symbol, symbol.id === selectedSymbolId);
+    drawSymbolSelection(
+      context,
+      symbol,
+      symbol.id === selectedSymbolId || selectedSymbolIds.has(symbol.id),
+    );
+  }
+
+  if (selectionBox) {
+    drawSelectionBox(context, selectionBox);
   }
 }
 
@@ -3419,6 +4327,31 @@ function drawCircleComponent(
     }, true);
   }
 
+  context.restore();
+}
+
+function eraseImportedSymbolPatch(context: CanvasRenderingContext2D, symbol: DrawnSymbol) {
+  const importedBounds = symbol.imported?.bounds;
+  const visualBox = importedBounds ? null : symbolVisualBox(symbol);
+
+  if (!importedBounds && !visualBox) {
+    return;
+  }
+
+  const padding = 8;
+  const x = importedBounds?.x ?? (visualBox?.minX ?? 0);
+  const y = importedBounds?.y ?? (visualBox?.minY ?? 0);
+  const width = importedBounds?.size ?? ((visualBox?.maxX ?? 0) - (visualBox?.minX ?? 0));
+  const height = importedBounds?.size ?? ((visualBox?.maxY ?? 0) - (visualBox?.minY ?? 0));
+
+  context.save();
+  context.fillStyle = "#ffffff";
+  context.fillRect(
+    Math.max(0, x - padding),
+    Math.max(0, y - padding),
+    Math.min(CANVAS_SIZE, width + padding * 2),
+    Math.min(CANVAS_SIZE, height + padding * 2),
+  );
   context.restore();
 }
 
@@ -3483,6 +4416,19 @@ function drawSymbolSelection(
   context.setLineDash([]);
   drawHandle(context, { x: bounds.maxX + 16, y: bounds.center.y });
   drawHandle(context, { x: bounds.maxX + 18, y: bounds.maxY + 18 }, true);
+  context.restore();
+}
+
+function drawSelectionBox(context: CanvasRenderingContext2D, selectionBox: SelectionBox) {
+  const box = selectionRectFromPoints(selectionBox.start, selectionBox.current);
+
+  context.save();
+  context.fillStyle = "rgba(17, 24, 39, 0.08)";
+  context.strokeStyle = "#111827";
+  context.lineWidth = 2;
+  context.setLineDash([6, 5]);
+  context.fillRect(box.minX, box.minY, box.maxX - box.minX, box.maxY - box.minY);
+  context.strokeRect(box.minX, box.minY, box.maxX - box.minX, box.maxY - box.minY);
   context.restore();
 }
 
@@ -3562,6 +4508,22 @@ function rectFromBounds(minX: number, minY: number, maxX: number, maxY: number):
     y: Math.max(0, Math.min(CANVAS_SIZE - size, centerY - size / 2)),
     size,
   };
+}
+
+function shouldAttemptImportMatch(points: Point[], rect: Rect) {
+  return (
+    points.length >= MIN_IMPORT_PIXELS &&
+    points.length <= IMPORT_MATCH_MAX_PIXELS &&
+    rect.size <= IMPORT_MATCH_MAX_SIZE
+  );
+}
+
+function shouldCreateImportedComponent(points: Point[], rect: Rect) {
+  return (
+    points.length >= MIN_IMPORT_PIXELS &&
+    points.length <= IMPORT_COMPONENT_MAX_PIXELS &&
+    rect.size <= IMPORT_COMPONENT_MAX_SIZE
+  );
 }
 
 function marksFromImportedPixels(points: Point[]) {
@@ -3666,6 +4628,137 @@ function circleFromImportedComponent(points: Point[], rect: Rect) {
   };
 }
 
+function outerCircleFromImportedInk(imageData: ImageData) {
+  const points: Point[] = [];
+  let minX = CANVAS_SIZE;
+  let minY = CANVAS_SIZE;
+  let maxX = 0;
+  let maxY = 0;
+
+  for (let y = 0; y < CANVAS_SIZE; y += 1) {
+    for (let x = 0; x < CANVAS_SIZE; x += 1) {
+      const index = (y * CANVAS_SIZE + x) * 4;
+      const darkness =
+        255 -
+        (imageData.data[index] + imageData.data[index + 1] + imageData.data[index + 2]) /
+          3;
+
+      if (imageData.data[index + 3] > 24 && darkness > 70) {
+        points.push({ x, y });
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+
+  if (points.length < 120 || maxX <= minX || maxY <= minY) {
+    return null;
+  }
+
+  const center = {
+    x: (minX + maxX) / 2,
+    y: (minY + maxY) / 2,
+  };
+  const maxRadius = Math.min(CANVAS_RADIUS, Math.max(maxX - minX, maxY - minY) / 2 + 12);
+  const bins = new Array(Math.ceil(maxRadius) + 1).fill(0);
+
+  for (const point of points) {
+    const distance = Math.round(distanceBetween(point, center));
+
+    if (distance >= MIN_SPELL_RADIUS && distance < bins.length) {
+      bins[distance] += 1;
+    }
+  }
+
+  let bestRadius = 0;
+  let bestScore = 0;
+
+  for (let radius = MIN_SPELL_RADIUS; radius < bins.length; radius += 1) {
+    const localCount =
+      (bins[radius - 2] ?? 0) +
+      (bins[radius - 1] ?? 0) +
+      bins[radius] +
+      (bins[radius + 1] ?? 0) +
+      (bins[radius + 2] ?? 0);
+    const largeCircleBias = 1 + radius / CANVAS_RADIUS;
+    const score = localCount * largeCircleBias;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestRadius = radius;
+    }
+  }
+
+  if (bestRadius < MIN_SPELL_RADIUS) {
+    return null;
+  }
+
+  const tolerance = Math.max(IMPORT_CIRCLE_RING_TOLERANCE, bestRadius * 0.045);
+  const ringPoints = points.filter(
+    (point) => Math.abs(distanceBetween(point, center) - bestRadius) <= tolerance,
+  );
+  const angleBins = new Set(
+    ringPoints.map((point) =>
+      Math.floor(
+        angleFromNorthClockwise(point.x - center.x, point.y - center.y) / 5,
+      ),
+    ),
+  );
+  const angularCoverage = angleBins.size / 72;
+  const radialDeviation =
+    standardDeviation(ringPoints.map((point) => distanceBetween(point, center))) /
+    Math.max(1, bestRadius);
+
+  if (ringPoints.length < 90 || angularCoverage < 0.46 || radialDeviation > 0.12) {
+    return null;
+  }
+
+  const sourceStroke = ringPoints
+    .filter((_, index) => index % Math.max(1, Math.floor(ringPoints.length / 260)) === 0)
+    .sort(
+      (left, right) =>
+        angleFromNorthClockwise(left.x - center.x, left.y - center.y) -
+        angleFromNorthClockwise(right.x - center.x, right.y - center.y),
+    );
+  const size = bestRadius * 2;
+
+  return {
+    id: circleId(),
+    center,
+    radius: bestRadius,
+    rotation: 0,
+    perfection: Number(
+      Math.max(0, Math.min(1, angularCoverage * 0.55 + (1 - radialDeviation * 5) * 0.45)).toFixed(3),
+    ),
+    sourceStroke,
+    closed: true,
+    sealed: true,
+    imported: {
+      source: "image" as const,
+      bounds: {
+        x: Math.max(0, center.x - size / 2),
+        y: Math.max(0, center.y - size / 2),
+        size,
+      },
+    },
+  };
+}
+
+function circlesAreSimilar(left: CircleComponent, right: CircleComponent) {
+  return (
+    distanceBetween(left.center, right.center) < Math.max(14, Math.min(left.radius, right.radius) * 0.12) &&
+    Math.abs(left.radius - right.radius) < Math.max(16, Math.min(left.radius, right.radius) * 0.12)
+  );
+}
+
+function pointIsOnImportedCircleStroke(point: Point, circle: CircleComponent) {
+  const tolerance = Math.max(IMPORT_CIRCLE_RING_TOLERANCE + 4, circle.radius * 0.055);
+
+  return Math.abs(distanceBetween(point, circle.center) - circle.radius) <= tolerance;
+}
+
 function componentCanvasFromMarks(marks: Mark[]) {
   const canvas = createCanvas(CANVAS_SIZE);
   drawMarksWithLineWidth(canvas, marks, true, IMPORT_LINE_WIDTH);
@@ -3707,16 +4800,94 @@ function bestReferenceMatch(marks: Mark[], referencesToMatch: PreparedReference[
     return null;
   }
 
-  return referencesToMatch
+  const variants = drawingSignatureVariants(marks);
+
+  const ranked = referencesToMatch
     .map((reference) => ({
       ...reference,
-      score: compareSignatures(drawing, reference),
+      ...bestRotatedMatchScoreFromVariants(variants, reference),
     }))
-    .sort((left, right) => right.score - left.score)[0] ?? null;
+    .sort((left, right) => right.score - left.score);
+  const best = ranked[0];
+
+  if (!best) {
+    return null;
+  }
+
+  return {
+    ...best,
+    scoreMargin: Number((best.score - (ranked[1]?.score ?? 0)).toFixed(3)),
+  };
+}
+
+function isConfidentImportMatch(match: MatchResult | null) {
+  return Boolean(
+    match &&
+      match.score >= IMPORT_MATCH_THRESHOLD &&
+      (match.scoreMargin ?? 0) >= IMPORT_MATCH_MARGIN,
+  );
+}
+
+function symbolReference(symbol: DrawnSymbol) {
+  return symbol.replacement?.reference ?? null;
 }
 
 function symbolCompilerId(symbol: DrawnSymbol) {
-  return symbol.replacement?.reference.id ?? "freehand";
+  const reference = symbolReference(symbol);
+
+  return reference ? referenceKey(reference) : "freehand";
+}
+
+function symbolReadableName(symbol: DrawnSymbol) {
+  return symbolReference(symbol)?.name ?? "Freehand symbol";
+}
+
+function radialBandLabel(ratio: number) {
+  if (ratio < 0.34) {
+    return "center";
+  }
+
+  if (ratio < 0.72) {
+    return "middle";
+  }
+
+  return "outer";
+}
+
+function groupStrengthLabel(count: number) {
+  if (count >= 8) {
+    return "strong";
+  }
+
+  if (count >= 4) {
+    return "moderate";
+  }
+
+  return "present";
+}
+
+function rotationTendencyLabel({
+  fixedPlacementScore,
+  inwardFacingScore,
+  outwardFacingScore,
+  clockwiseFlowScore,
+  counterClockwiseFlowScore,
+}: {
+  fixedPlacementScore: number;
+  inwardFacingScore: number;
+  outwardFacingScore: number;
+  clockwiseFlowScore: number;
+  counterClockwiseFlowScore: number;
+}) {
+  const candidates = [
+    { label: "fixed placement", score: fixedPlacementScore },
+    { label: "inward bias", score: inwardFacingScore },
+    { label: "outward bias", score: outwardFacingScore },
+    { label: "clockwise bias", score: clockwiseFlowScore },
+    { label: "counterclockwise bias", score: counterClockwiseFlowScore },
+  ].sort((left, right) => right.score - left.score);
+
+  return candidates[0]?.score >= 0.52 ? candidates[0].label : "mixed/custom";
 }
 
 function circularSpacingStats(angles: number[]) {
@@ -3851,6 +5022,9 @@ function analyzeSymbolGroups(symbols: DrawnSymbol[], parent: CircleComponent) {
           ),
         ),
       );
+      const fixedPlacementScore = roundedRatio(
+        average(geometries.map((item) => item.orientation.orientationScores.fixed)),
+      );
       const tangentialFlowScore = roundedRatio(
         Math.max(clockwiseFlowScore, counterClockwiseFlowScore),
       );
@@ -3866,10 +5040,21 @@ function analyzeSymbolGroups(symbols: DrawnSymbol[], parent: CircleComponent) {
 
       return {
         symbolId,
+        compilerKey: symbolId,
         symbolName:
-          groupSymbols[0]?.replacement?.reference.name ??
-          (symbolId === "freehand" ? "Freehand symbol" : symbolId),
+          groupSymbols[0] ? symbolReadableName(groupSymbols[0]) : symbolId,
+        symbolType: groupSymbols[0]?.replacement?.reference.type ?? "freehand",
+        category: groupSymbols[0]?.replacement?.reference.category ?? "unknown",
+        compilerRole:
+          groupSymbols[0]?.replacement?.reference.type === "sigil"
+            ? "noun/domain"
+            : groupSymbols[0]?.replacement?.reference.type === "sign"
+              ? "modifier/adverb"
+              : "unknown",
         count: groupSymbols.length,
+        groupStrength: groupStrengthLabel(groupSymbols.length),
+        averageRadialDistanceRatio: roundedRatio(radialMean),
+        averageRadialBand: radialBandLabel(radialMean),
         averageSpacingDegrees: spacing.averageSpacingDegrees,
         spacingUniformityScore: spacing.spacingUniformityScore,
         orientationUniformityScore: roundedRatio(
@@ -3883,9 +5068,26 @@ function analyzeSymbolGroups(symbols: DrawnSymbol[], parent: CircleComponent) {
         radialUniformityScore,
         clockwiseFlowScore,
         counterClockwiseFlowScore,
+        fixedPlacementScore,
         inwardFacingScore,
         outwardFacingScore,
         tangentialFlowScore,
+        generalRotationTendency: rotationTendencyLabel({
+          fixedPlacementScore,
+          inwardFacingScore,
+          outwardFacingScore,
+          clockwiseFlowScore,
+          counterClockwiseFlowScore,
+        }),
+        fixedPlacement: fixedPlacementScore >= 0.58,
+        inwardBias: inwardFacingScore >= 0.52,
+        outwardBias: outwardFacingScore >= 0.52,
+        clockwiseBias: clockwiseFlowScore >= 0.52,
+        counterClockwiseBias: counterClockwiseFlowScore >= 0.52,
+        twistOrCirculationPossible:
+          tangentialFlowScore >= 0.52 ||
+          Math.max(clockwiseFlowScore, counterClockwiseFlowScore) >= 0.52,
+        reinforcementOrAmplificationPossible: groupSymbols.length >= 2,
         orientationModeDetected,
         possiblePattern: likelyPatternLabel({
           count: groupSymbols.length,
@@ -3900,6 +5102,130 @@ function analyzeSymbolGroups(symbols: DrawnSymbol[], parent: CircleComponent) {
       };
     })
     .filter((group) => group.count > 1);
+}
+
+function grammarSymbolSummary(symbol: DrawnSymbol, parent: CircleComponent) {
+  const reference = symbolReference(symbol);
+  const position = symbolPositionGeometry(symbol, parent);
+  const orientation = symbolOrientationGeometry(symbol, parent);
+
+  return {
+    symbolId: reference ? referenceKey(reference) : symbol.id,
+    name: reference?.name ?? "Freehand symbol",
+    type: reference?.type ?? "freehand",
+    category: reference?.category ?? "unknown",
+    role:
+      reference?.type === "sigil"
+        ? "noun/domain"
+        : reference?.type === "sign"
+          ? "modifier/adverb"
+          : "unknown",
+    radialBand: position ? radialBandLabel(position.radialDistanceRatio) : "unknown",
+    angleDegrees: position?.angleDegrees ?? null,
+    rotationDegrees: orientation.rotationDegrees,
+  };
+}
+
+function groupGrammarLine(group: ReturnType<typeof analyzeSymbolGroups>[number]) {
+  const base =
+    group.symbolType === "sigil"
+      ? `contains a ${group.symbolName} sigil group with count ${group.count}. This creates a ${group.category} domain group.`
+      : group.symbolType === "sign"
+        ? `contains a ${group.symbolName} sign group with count ${group.count}. This creates a repeated ${group.category} modifier.`
+        : `contains an unidentified symbol group with count ${group.count}. This preserves an unknown repeated visual structure.`;
+  const behavior =
+    group.twistOrCirculationPossible
+      ? ` ${group.symbolName} group shows ${group.generalRotationTendency}, suggesting possible circulation or twist behavior.`
+      : group.reinforcementOrAmplificationPossible
+        ? ` Repetition suggests possible reinforcement or amplification structure.`
+        : "";
+
+  return `${base}${behavior}`;
+}
+
+function spellGrammarForCircle({
+  circle,
+  parent,
+  childSymbols,
+  repeatedSymbolGroups,
+}: {
+  circle: CircleComponent;
+  parent?: CircleComponent;
+  childSymbols: DrawnSymbol[];
+  repeatedSymbolGroups: ReturnType<typeof analyzeSymbolGroups>;
+}) {
+  const groupedKeys = new Set(repeatedSymbolGroups.map((group) => group.compilerKey));
+  const sigilGroups = repeatedSymbolGroups.filter((group) => group.symbolType === "sigil");
+  const signGroups = repeatedSymbolGroups.filter((group) => group.symbolType === "sign");
+  const singleSigils = childSymbols
+    .filter((symbol) => symbolReference(symbol)?.type === "sigil")
+    .filter((symbol) => !groupedKeys.has(symbolCompilerId(symbol)))
+    .map((symbol) => grammarSymbolSummary(symbol, circle));
+  const singleSigns = childSymbols
+    .filter((symbol) => symbolReference(symbol)?.type === "sign")
+    .filter((symbol) => !groupedKeys.has(symbolCompilerId(symbol)))
+    .map((symbol) => grammarSymbolSummary(symbol, circle));
+  const unknownSymbols = childSymbols
+    .filter((symbol) => !symbolReference(symbol))
+    .map((symbol) => grammarSymbolSummary(symbol, circle));
+  const groupBehaviors = repeatedSymbolGroups.map((group) => ({
+    symbolId: group.symbolId,
+    symbolName: group.symbolName,
+    symbolType: group.symbolType,
+    count: group.count,
+    averageRadialBand: group.averageRadialBand,
+    generalRotationTendency: group.generalRotationTendency,
+    fixedPlacement: group.fixedPlacement,
+    inwardBias: group.inwardBias,
+    outwardBias: group.outwardBias,
+    clockwiseBias: group.clockwiseBias,
+    counterClockwiseBias: group.counterClockwiseBias,
+    twistOrCirculationPossible: group.twistOrCirculationPossible,
+    reinforcementOrAmplificationPossible: group.reinforcementOrAmplificationPossible,
+    confidence: group.groupStrength,
+    grammarLine: groupGrammarLine(group),
+  }));
+  const domainNames = [
+    ...sigilGroups.map((group) => `${group.symbolName} group`),
+    ...singleSigils.map((symbol) => symbol.name),
+  ];
+  const modifierNames = [
+    ...signGroups.map((group) => `${group.symbolName} group`),
+    ...singleSigns.map((symbol) => symbol.name),
+  ];
+  const twistGroups = groupBehaviors.filter(
+    (group) => group.twistOrCirculationPossible,
+  );
+
+  return {
+    boundary: {
+      circleQuality: Number(circle.perfection.toFixed(3)),
+      closed: circle.closed,
+      parentCircleId: parent?.id ?? null,
+      grammarLine: `${parent ? "Sub spell" : "Spell"} boundary is ${
+        circle.closed ? "closed" : "open"
+      } with quality ${Math.round(circle.perfection * 100)}%.`,
+    },
+    nounsDomains: {
+      sigilGroups,
+      singleSigils,
+    },
+    modifiersAdverbs: {
+      signGroups,
+      singleSigns,
+    },
+    unknowns: unknownSymbols,
+    groupBehaviors,
+    cautiousSummary: `This spell grammar suggests ${
+      domainNames.length > 0 ? domainNames.join(" + ") : "no identified domain"
+    } modified by ${
+      modifierNames.length > 0 ? modifierNames.join(" + ") : "no identified modifier"
+    }${
+      twistGroups.length > 0
+        ? ", with possible rotational/twist behavior"
+        : ""
+    }. This is geometry-to-grammar only, not exact magic meaning.`,
+  };
 }
 
 function buildSpellSnapshot(
@@ -3979,6 +5305,12 @@ function buildSpellSnapshot(
       (symbol) => symbolParentId(symbol, circles) === circle.id,
     );
     const repeatedSymbolGroups = analyzeSymbolGroups(childSymbols, circle);
+    const grammar = spellGrammarForCircle({
+      circle,
+      parent,
+      childSymbols,
+      repeatedSymbolGroups,
+    });
 
     return {
       id: circle.id,
@@ -4008,6 +5340,8 @@ function buildSpellSnapshot(
       groupAnalysis: {
         repeatedSymbolGroups,
         hasRepeatedSymbols: repeatedSymbolGroups.length > 0,
+        groupingRule:
+          "Same symbol id, same parent spell circle, count >= 2. Spacing and ring perfection are not required.",
         strongestPattern:
           repeatedSymbolGroups
             .slice()
@@ -4021,6 +5355,7 @@ function buildSpellSnapshot(
                   left.radialUniformityScore),
             )[0] ?? null,
       },
+      compilerGrammar: grammar,
       contents: {
         spells: childSpells.map((child) => spellSnapshot(child, circle)),
         symbols: childSymbols.map((symbol) => symbolSnapshot(symbol, circle)),
@@ -4047,6 +5382,105 @@ function buildSpellSnapshot(
     spells: rootSpells.map((circle) => spellSnapshot(circle)),
     looseSymbols: looseSymbols.map((symbol) => symbolSnapshot(symbol)),
   };
+}
+
+function readableSpellGrammar(snapshot: ReturnType<typeof buildSpellSnapshot>) {
+  const spells = Array.isArray(snapshot.spells) ? snapshot.spells : [];
+
+  if (spells.length === 0) {
+    return "No enclosed spell circles yet.\nDraw or import a closed circle to create a spell scope.";
+  }
+
+  return spells
+    .map((spell, index) => readableSpellGrammarBlock(spell, `Spell ${index + 1}`, 0))
+    .join("\n\n");
+}
+
+function readableSpellGrammarBlock(
+  spell: Record<string, unknown>,
+  label: string,
+  depth: number,
+) {
+  const grammar = spell.compilerGrammar as
+    | {
+        boundary?: { grammarLine?: string };
+        nounsDomains?: {
+          sigilGroups?: Array<Record<string, unknown>>;
+          singleSigils?: Array<Record<string, unknown>>;
+        };
+        modifiersAdverbs?: {
+          signGroups?: Array<Record<string, unknown>>;
+          singleSigns?: Array<Record<string, unknown>>;
+        };
+        groupBehaviors?: Array<Record<string, unknown>>;
+        cautiousSummary?: string;
+      }
+    | undefined;
+  const contents = spell.contents as { spells?: Array<Record<string, unknown>> } | undefined;
+  const indent = "  ".repeat(depth);
+  const nestedIndent = "  ".repeat(depth + 1);
+  const lines = [
+    `${indent}${label}`,
+    `${nestedIndent}Boundary: ${grammar?.boundary?.grammarLine ?? "No boundary grammar available."}`,
+    `${nestedIndent}Nouns/domains: ${readableGrammarItems(
+      grammar?.nounsDomains?.sigilGroups,
+      grammar?.nounsDomains?.singleSigils,
+      "none identified",
+    )}`,
+    `${nestedIndent}Modifiers/adverbs: ${readableGrammarItems(
+      grammar?.modifiersAdverbs?.signGroups,
+      grammar?.modifiersAdverbs?.singleSigns,
+      "none identified",
+    )}`,
+  ];
+  const behaviors = grammar?.groupBehaviors ?? [];
+
+  if (behaviors.length > 0) {
+    lines.push(`${nestedIndent}Group behaviors:`);
+    lines.push(
+      ...behaviors.map(
+        (behavior) =>
+          `${nestedIndent}- ${String(
+            behavior.grammarLine ?? `${behavior.symbolName ?? "Symbol"} group`,
+          )}`,
+      ),
+    );
+  } else {
+    lines.push(`${nestedIndent}Group behaviors: none detected`);
+  }
+
+  lines.push(
+    `${nestedIndent}Cautious summary: ${
+      grammar?.cautiousSummary ?? "No grammar summary available."
+    }`,
+  );
+
+  const childSpells = contents?.spells ?? [];
+
+  if (childSpells.length > 0) {
+    lines.push(`${nestedIndent}Nested spells:`);
+    lines.push(
+      ...childSpells.map((child, index) =>
+        readableSpellGrammarBlock(child, `Sub spell ${index + 1}`, depth + 2),
+      ),
+    );
+  }
+
+  return lines.join("\n");
+}
+
+function readableGrammarItems(
+  groups: Array<Record<string, unknown>> | undefined,
+  singles: Array<Record<string, unknown>> | undefined,
+  fallback: string,
+) {
+  const groupItems = (groups ?? []).map(
+    (group) => `${String(group.symbolName ?? "Unknown")} group x${String(group.count ?? "?")}`,
+  );
+  const singleItems = (singles ?? []).map((symbol) => String(symbol.name ?? "Unknown"));
+  const items = [...groupItems, ...singleItems];
+
+  return items.length > 0 ? items.join(", ") : fallback;
 }
 
 async function cachedImage(src: string, cache: Map<string, HTMLImageElement>) {
