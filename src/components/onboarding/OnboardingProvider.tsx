@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { BookOpen } from "lucide-react";
+import { usePathname } from "next/navigation";
 import OnboardingOverlay from "./OnboardingOverlay";
 
 const STORAGE_KEY = "wha:onboarding:v1";
@@ -50,18 +51,20 @@ function writeCompleted(): void {
 }
 
 export default function OnboardingProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const showGuide = pathname === "/" || pathname === "/draw";
 
   // First-run detection runs after mount so server and client markup match.
   // The only state update happens inside the timer callback, never synchronously.
   useEffect(() => {
-    if (readCompleted()) {
+    if (!showGuide || readCompleted()) {
       return;
     }
 
     const timer = window.setTimeout(() => setIsOpen(true), FIRST_RUN_DELAY);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [showGuide]);
 
   const startGuide = useCallback(() => setIsOpen(true), []);
 
@@ -82,20 +85,22 @@ export default function OnboardingProvider({ children }: { children: ReactNode }
     <OnboardingContext.Provider value={value}>
       {children}
 
-      <button
-        type="button"
-        onClick={startGuide}
-        className="group fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-[var(--color-gold)]/60 bg-[var(--color-surface)]/95 py-2.5 pl-3 pr-3 text-ink shadow-lg backdrop-blur transition hover:border-[var(--color-gold)] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-arcane-bright)] sm:pr-4"
-        aria-label="Open the atelier guide"
-        title="How it works"
-      >
-        <span className="grid h-7 w-7 place-items-center rounded-full bg-[var(--color-arcane)]/12 text-[var(--color-arcane)] transition group-hover:bg-[var(--color-arcane)]/20">
-          <BookOpen className="h-4 w-4" aria-hidden="true" />
-        </span>
-        <span className="hidden text-sm font-semibold sm:inline">How it works</span>
-      </button>
+      {showGuide ? (
+        <button
+          type="button"
+          onClick={startGuide}
+          className="group fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-[var(--color-gold)]/60 bg-[var(--color-surface)]/95 py-2.5 pl-3 pr-3 text-ink shadow-lg backdrop-blur transition hover:border-[var(--color-gold)] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-arcane-bright)] sm:pr-4"
+          aria-label="Open the atelier guide"
+          title="How it works"
+        >
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-[var(--color-arcane)]/12 text-[var(--color-arcane)] transition group-hover:bg-[var(--color-arcane)]/20">
+            <BookOpen className="h-4 w-4" aria-hidden="true" />
+          </span>
+          <span className="hidden text-sm font-semibold sm:inline">How it works</span>
+        </button>
+      ) : null}
 
-      {isOpen ? <OnboardingOverlay onClose={closeGuide} /> : null}
+      {showGuide && isOpen ? <OnboardingOverlay onClose={closeGuide} /> : null}
     </OnboardingContext.Provider>
   );
 }
