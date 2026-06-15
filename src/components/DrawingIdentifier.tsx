@@ -1811,7 +1811,16 @@ export default function DrawingIdentifier() {
 
     (window as unknown as { __dbg?: unknown }).__dbg = {
       n: symbols.length,
-      marks: symbols.map((s) => s.marks.map((m) => m.points.length)),
+      marks: symbols.map((s) =>
+        s.marks.map((m) => {
+          const xs = m.points.map((p) => Math.round(p.x));
+          const ys = m.points.map((p) => Math.round(p.y));
+          return {
+            len: m.points.length,
+            bbox: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)],
+          };
+        }),
+      ),
     };
 
     redrawSpellCanvas({
