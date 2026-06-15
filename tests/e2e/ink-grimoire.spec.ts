@@ -39,3 +39,41 @@ test("loads a prepared page and uses it in the arena", async ({ page }) => {
     page.locator("article").getByText(/4 uses/),
   ).toBeVisible();
 });
+
+test("automatically advances when the selected page is spent", async ({
+  page,
+}) => {
+  const flame = {
+    ...createPreparedSpell(demoSpells[0], 0.9, {
+      id: "e2e-flame-last-use",
+      now: 1,
+    }),
+    remainingUses: 1,
+  };
+  const water = createPreparedSpell(demoSpells[1], 0.85, {
+    id: "e2e-water",
+    now: 2,
+  });
+
+  await page.addInitScript(
+    (prepared) => {
+      window.localStorage.setItem("wha:onboarding:v1", "done");
+      window.localStorage.setItem(
+        "ink-grimoire-arena:prepared-spells:v1",
+        JSON.stringify(prepared),
+      );
+    },
+    [flame, water],
+  );
+  await page.goto("/arena");
+
+  const stage = page.getByLabel("Ink Grimoire Arena combat stage");
+  await stage.click({ position: { x: 780, y: 430 } });
+
+  await expect(
+    page.getByRole("button", { name: "Select Flame Shot Seal" }),
+  ).toContainText("Spent");
+  await expect(
+    page.getByRole("button", { name: "Select Watershot Seal" }),
+  ).toHaveAttribute("aria-pressed", "true");
+});
