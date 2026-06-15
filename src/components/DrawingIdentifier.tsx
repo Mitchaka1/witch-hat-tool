@@ -1809,6 +1809,11 @@ export default function DrawingIdentifier() {
 
     let cancelled = false;
 
+    (window as unknown as { __dbg?: unknown }).__dbg = {
+      n: symbols.length,
+      marks: symbols.map((s) => s.marks.map((m) => m.points.length)),
+    };
+
     redrawSpellCanvas({
       symbols,
       circles,
