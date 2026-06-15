@@ -3,9 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { BookOpen, PenTool, Search, Sparkles, X } from "lucide-react";
+import { BookOpen, Compass, PenTool, Search, Sparkles, X } from "lucide-react";
 import signsData from "@/data/signs.json";
 import sigilsData from "@/data/sigils.json";
+import MagicCircle from "@/components/onboarding/MagicCircle";
+import { useOnboarding } from "@/components/onboarding/OnboardingProvider";
 
 type SymbolType = "sign" | "sigil";
 
@@ -135,7 +137,7 @@ function SymbolImage({
   if (!item.assetPath) {
     return (
       <div
-        className={`${dimensions} ${className} grid place-items-center rounded-md border border-dashed border-stone-300 bg-stone-100 text-center text-xs font-medium uppercase tracking-wide text-stone-500`}
+        className={`${dimensions} ${className} grid place-items-center rounded-md border border-dashed border-[var(--color-line)] bg-[var(--color-surface-sunken)] text-center text-xs font-medium uppercase tracking-wide text-ink-faint`}
       >
         No vector
       </div>
@@ -154,6 +156,7 @@ function SymbolImage({
 }
 
 export default function SymbolBrowser() {
+  const { startGuide } = useOnboarding();
   const [activeType, setActiveType] = useState<SymbolType>("sign");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
@@ -182,28 +185,39 @@ export default function SymbolBrowser() {
     visibleItems.find((item) => item.id === selectedId) ?? visibleItems[0] ?? null;
 
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-950">
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-4 border-b border-stone-300 pb-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-2">
-            <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-amber-700">
-              <Sparkles className="h-4 w-4" aria-hidden="true" />
-              Witch Hat component library
-            </p>
-            <h1 className="text-3xl font-semibold tracking-normal text-stone-950 sm:text-4xl">
-              Signs and Sigils
-            </h1>
+    <div className="page-atmosphere min-h-screen text-ink">
+      <main className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8">
+        <header className="flex flex-col gap-5 border-b border-[var(--color-line)] pb-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex items-center gap-4">
+            <MagicCircle className="h-14 w-14 shrink-0 text-[var(--color-arcane)]" />
+            <div className="space-y-1.5">
+              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-gold)]">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                Witch Hat Atelier
+              </p>
+              <h1 className="font-[family-name:var(--font-cinzel)] text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+                Signs &amp; Sigils
+              </h1>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={startGuide}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[var(--color-line-strong)] bg-[var(--color-surface)] px-4 text-sm font-semibold text-ink shadow-sm transition hover:border-[var(--color-gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-arcane-bright)]"
+            >
+              <Compass className="h-4 w-4" aria-hidden="true" />
+              Guide
+            </button>
             <Link
               href="/draw"
-              className="inline-flex h-10 items-center justify-center gap-2 rounded border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-800 shadow-sm transition hover:border-amber-600 hover:text-stone-950"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[var(--color-line-strong)] bg-[var(--color-surface)] px-4 text-sm font-semibold text-ink shadow-sm transition hover:border-[var(--color-gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-arcane-bright)]"
             >
               <PenTool className="h-4 w-4" aria-hidden="true" />
-              Draw
+              Workshop
             </Link>
-            <div className="grid grid-cols-2 rounded-md border border-stone-300 bg-stone-200 p-1">
+            <div className="grid grid-cols-2 rounded-lg border border-[var(--color-line-strong)] bg-[var(--color-surface-sunken)] p-1">
               {(["sign", "sigil"] as const).map((type) => (
                 <button
                   key={type}
@@ -214,10 +228,10 @@ export default function SymbolBrowser() {
                     setQuery("");
                     setSelectedId(collections[type][0]?.id ?? null);
                   }}
-                  className={`rounded px-5 py-2 text-sm font-semibold capitalize transition ${
+                  className={`rounded-md px-5 py-2 text-sm font-semibold capitalize transition ${
                     activeType === type
-                      ? "bg-stone-950 text-stone-50 shadow-sm"
-                      : "text-stone-700 hover:bg-stone-300"
+                      ? "bg-[var(--color-arcane)] text-[var(--color-parchment-bright)] shadow-sm"
+                      : "text-ink-soft hover:bg-[var(--color-surface)]"
                   }`}
                 >
                   {type === "sign" ? `Signs (${signs.length})` : `Sigils (${sigils.length})`}
@@ -229,24 +243,24 @@ export default function SymbolBrowser() {
 
         <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
           <div className="space-y-4">
-            <div className="grid gap-3 rounded-md border border-stone-300 bg-white p-3 shadow-sm sm:grid-cols-[minmax(0,1fr)_220px]">
+            <div className="grid gap-3 rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] p-3 shadow-sm sm:grid-cols-[minmax(0,1fr)_220px]">
               <label className="relative block">
                 <span className="sr-only">Search symbols</span>
                 <Search
-                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500"
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint"
                   aria-hidden="true"
                 />
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search name, effect, or spell"
-                  className="h-11 w-full rounded border border-stone-300 bg-stone-50 pl-10 pr-10 text-sm outline-none transition placeholder:text-stone-500 focus:border-amber-600 focus:bg-white"
+                  className="h-11 w-full rounded border border-[var(--color-line)] bg-[var(--color-surface-sunken)] pl-10 pr-10 text-sm outline-none transition placeholder:text-ink-faint focus:border-[var(--color-gold)] focus:bg-[var(--color-surface)]"
                 />
                 {query ? (
                   <button
                     type="button"
                     onClick={() => setQuery("")}
-                    className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded text-stone-500 transition hover:bg-stone-200 hover:text-stone-950"
+                    className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded text-ink-faint transition hover:bg-[var(--color-surface-sunken)] hover:text-ink"
                     aria-label="Clear search"
                     title="Clear search"
                   >
@@ -260,7 +274,7 @@ export default function SymbolBrowser() {
                 <select
                   value={category}
                   onChange={(event) => setCategory(event.target.value)}
-                  className="h-11 w-full rounded border border-stone-300 bg-stone-50 px-3 text-sm font-medium text-stone-800 outline-none transition focus:border-amber-600 focus:bg-white"
+                  className="h-11 w-full rounded border border-[var(--color-line)] bg-[var(--color-surface-sunken)] px-3 text-sm font-medium text-ink outline-none transition focus:border-[var(--color-gold)] focus:bg-[var(--color-surface)]"
                 >
                   {categories.map((itemCategory) => (
                     <option key={itemCategory} value={itemCategory}>
@@ -271,11 +285,11 @@ export default function SymbolBrowser() {
               </label>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-stone-600">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-ink-soft">
               <p>
                 Showing{" "}
-                <span className="font-semibold text-stone-950">{visibleItems.length}</span>{" "}
-                of <span className="font-semibold text-stone-950">{activeItems.length}</span>{" "}
+                <span className="font-semibold text-ink">{visibleItems.length}</span>{" "}
+                of <span className="font-semibold text-ink">{activeItems.length}</span>{" "}
                 {activeType === "sign" ? "signs" : "sigils"}
               </p>
               {(query || category !== "all") ? (
@@ -286,7 +300,7 @@ export default function SymbolBrowser() {
                     setCategory("all");
                     setSelectedId(activeItems[0]?.id ?? null);
                   }}
-                  className="rounded border border-stone-300 bg-white px-3 py-1.5 font-semibold text-stone-700 transition hover:border-amber-600 hover:text-stone-950"
+                  className="rounded border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-1.5 font-semibold text-ink-soft transition hover:border-[var(--color-gold)] hover:text-ink"
                 >
                   Clear filters
                 </button>
@@ -299,30 +313,30 @@ export default function SymbolBrowser() {
                   key={`${item.type}-${item.id}`}
                   type="button"
                   onClick={() => setSelectedId(item.id)}
-                  className={`group flex min-h-48 flex-col items-start gap-3 rounded-md border bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-amber-500 hover:shadow-md ${
+                  className={`group flex min-h-48 flex-col items-start gap-3 rounded-md border bg-[var(--color-surface)] p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--color-gold)] hover:shadow-md ${
                     selectedItem?.id === item.id
-                      ? "border-amber-700 ring-2 ring-amber-200"
-                      : "border-stone-300"
+                      ? "border-[var(--color-gold)] ring-2 ring-[var(--color-gold-soft)]"
+                      : "border-[var(--color-line)]"
                   }`}
                 >
-                  <div className="flex w-full items-center justify-center rounded bg-stone-50 p-4">
+                  <div className="flex w-full items-center justify-center rounded bg-[var(--color-surface-sunken)] p-4">
                     <SymbolImage item={item} size="card" />
                   </div>
                   <div className="w-full space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                      <h2 className="text-lg font-semibold leading-6 text-stone-950">
+                      <h2 className="text-lg font-semibold leading-6 text-ink">
                         {item.name}
                       </h2>
                       {item.needsReview ? (
-                        <span className="shrink-0 rounded bg-amber-100 px-2 py-1 text-[11px] font-bold uppercase text-amber-800">
+                        <span className="shrink-0 rounded bg-[var(--color-gold-soft)] px-2 py-1 text-[11px] font-bold uppercase text-[var(--color-gold)]">
                           Review
                         </span>
                       ) : null}
                     </div>
-                    <p className="text-sm font-medium text-stone-600">
+                    <p className="text-sm font-medium text-ink-soft">
                       {categoryLabel(item.category)}
                     </p>
-                    <p className="line-clamp-3 text-sm leading-6 text-stone-700">
+                    <p className="line-clamp-3 text-sm leading-6 text-ink-soft">
                       {item.description}
                     </p>
                   </div>
@@ -331,54 +345,54 @@ export default function SymbolBrowser() {
             </div>
 
             {visibleItems.length === 0 ? (
-              <div className="rounded-md border border-dashed border-stone-300 bg-white p-8 text-center text-sm font-medium text-stone-600">
+              <div className="rounded-md border border-dashed border-[var(--color-line)] bg-[var(--color-surface)] p-8 text-center text-sm font-medium text-ink-soft">
                 No symbols match this search.
               </div>
             ) : null}
           </div>
 
           <aside className="lg:sticky lg:top-5 lg:self-start">
-            <div className="rounded-md border border-stone-300 bg-white p-5 shadow-sm">
+            <div className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] p-5 shadow-sm">
               {selectedItem ? (
                 <div className="space-y-5">
-                  <div className="flex items-center justify-center rounded bg-stone-50 p-5">
+                  <div className="flex items-center justify-center rounded bg-[var(--color-surface-sunken)] p-5">
                     <SymbolImage item={selectedItem} size="detail" />
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded bg-stone-950 px-2.5 py-1 text-xs font-semibold uppercase text-stone-50">
+                      <span className="rounded bg-[var(--color-arcane)] px-2.5 py-1 text-xs font-semibold uppercase text-[var(--color-parchment-bright)]">
                         {selectedItem.type}
                       </span>
-                      <span className="rounded bg-stone-200 px-2.5 py-1 text-xs font-semibold uppercase text-stone-700">
+                      <span className="rounded bg-[var(--color-surface-sunken)] px-2.5 py-1 text-xs font-semibold uppercase text-ink-soft">
                         {categoryLabel(selectedItem.category)}
                       </span>
                     </div>
-                    <h2 className="text-2xl font-semibold tracking-normal text-stone-950">
+                    <h2 className="font-[family-name:var(--font-cinzel)] text-2xl font-semibold tracking-tight text-ink">
                       {selectedItem.name}
                     </h2>
-                    <p className="text-sm leading-6 text-stone-700">
+                    <p className="text-sm leading-6 text-ink-soft">
                       {selectedItem.description}
                     </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="rounded bg-stone-100 p-3">
-                      <p className="font-semibold text-stone-950">Confidence</p>
-                      <p className="mt-1 text-stone-600">
+                    <div className="rounded bg-[var(--color-surface-sunken)] p-3">
+                      <p className="font-semibold text-ink">Confidence</p>
+                      <p className="mt-1 text-ink-soft">
                         {categoryLabel(selectedItem.confidence)}
                       </p>
                     </div>
-                    <div className="rounded bg-stone-100 p-3">
-                      <p className="font-semibold text-stone-950">Status</p>
-                      <p className="mt-1 text-stone-600">
+                    <div className="rounded bg-[var(--color-surface-sunken)] p-3">
+                      <p className="font-semibold text-ink">Status</p>
+                      <p className="mt-1 text-ink-soft">
                         {selectedItem.needsReview ? "Needs review" : "Reviewed"}
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <p className="flex items-center gap-2 text-sm font-semibold text-stone-950">
+                    <p className="flex items-center gap-2 text-sm font-semibold text-ink">
                       <BookOpen className="h-4 w-4" aria-hidden="true" />
                       Spells using it
                     </p>
@@ -387,19 +401,19 @@ export default function SymbolBrowser() {
                         {selectedItem.spellsUsing.slice(0, 18).map((spell) => (
                           <span
                             key={spell}
-                            className="rounded border border-stone-300 bg-stone-50 px-2.5 py-1 text-xs font-medium text-stone-700"
+                            className="rounded border border-[var(--color-line)] bg-[var(--color-surface-sunken)] px-2.5 py-1 text-xs font-medium text-ink-soft"
                           >
                             {spell}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-stone-600">No spells listed.</p>
+                      <p className="text-sm text-ink-soft">No spells listed.</p>
                     )}
                   </div>
                 </div>
               ) : (
-                <div className="rounded-md border border-dashed border-stone-300 p-8 text-center text-sm font-medium text-stone-600">
+                <div className="rounded-md border border-dashed border-[var(--color-line)] p-8 text-center text-sm font-medium text-ink-soft">
                   Select a symbol to inspect it.
                 </div>
               )}
