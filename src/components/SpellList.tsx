@@ -66,6 +66,11 @@ export default function SpellList({
                 {spell.shortEffect} · {spell.battleUses} use
                 {spell.battleUses === 1 ? "" : "s"}
               </span>
+              <span className="mt-1 block truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-gold)]">
+                {spell.libraryComponents
+                  .map((component) => component.name)
+                  .join(" + ")}
+              </span>
             </span>
             <span className="rounded-full bg-[var(--color-surface-sunken)] px-2.5 py-1 font-mono text-xs font-bold text-ink">
               {spell.preparationInkCost}
