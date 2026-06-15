@@ -5,7 +5,6 @@ import {
   PointerEvent as ReactPointerEvent,
   useCallback,
   useRef,
-  useState,
 } from "react";
 import type { DemoSpell } from "@/data/demoSpells";
 import {
@@ -27,7 +26,7 @@ export default function SpellTraceCanvas({
 }: SpellTraceCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointsRef = useRef<TracePoint[]>([]);
-  const [drawing, setDrawing] = useState(false);
+  const drawingRef = useRef(false);
 
   const redraw = useCallback((points: readonly TracePoint[]) => {
     const canvas = canvasRef.current;
@@ -67,9 +66,13 @@ export default function SpellTraceCanvas({
   const handlePointerDown = (
     event: ReactPointerEvent<HTMLCanvasElement>,
   ) => {
-    event.currentTarget.setPointerCapture(event.pointerId);
     pointsRef.current = [pointFromEvent(event)];
-    setDrawing(true);
+    drawingRef.current = true;
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Synthetic tests and older browsers may not provide pointer capture.
+    }
     onQualityChange(null);
     redraw(pointsRef.current);
   };
@@ -77,15 +80,15 @@ export default function SpellTraceCanvas({
   const handlePointerMove = (
     event: ReactPointerEvent<HTMLCanvasElement>,
   ) => {
-    if (!drawing) return;
+    if (!drawingRef.current) return;
 
     pointsRef.current = [...pointsRef.current, pointFromEvent(event)];
     redraw(pointsRef.current);
   };
 
   const finishTrace = () => {
-    if (!drawing) return;
-    setDrawing(false);
+    if (!drawingRef.current) return;
+    drawingRef.current = false;
     onQualityChange(scoreCircleQuality(pointsRef.current));
   };
 

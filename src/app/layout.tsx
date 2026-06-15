@@ -20,9 +20,9 @@ const cinzel = Cinzel({
 });
 
 export const metadata: Metadata = {
-  title: "Witch Hat Atelier — Sign & Sigil Workshop",
+  title: "Ink Grimoire Arena & Spell Forge",
   description:
-    "Study the 60 canon signs and sigils of Witch Hat Atelier, then draw and identify your own magic seals.",
+    "Study spell construction, prepare a limited-ink grimoire, and duel an AI rival in a 2D browser arena.",
 };
 
 export default function RootLayout({

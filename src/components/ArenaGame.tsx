@@ -1021,16 +1021,16 @@ export default function ArenaGame() {
   });
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => {
+    const timer = window.setTimeout(() => {
       const stored = loadGrimoire();
       const fresh = stored.map((page) => ({ ...page }));
       initialPagesRef.current = fresh;
       pagesRef.current = fresh;
       setPages(fresh);
       setLoaded(true);
-    });
+    }, 0);
 
-    return () => cancelAnimationFrame(frame);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const selectPage = useCallback((index: number) => {
@@ -1287,7 +1287,7 @@ export default function ArenaGame() {
           />
         </section>
 
-        <section className="relative overflow-hidden rounded-2xl border border-white/15 bg-[#17152b] shadow-2xl">
+        <section className="relative mx-auto max-w-[960px] overflow-hidden rounded-2xl border border-white/15 bg-[#17152b] shadow-2xl">
           <div className="arena-stage relative aspect-video w-full">
             <canvas
               ref={canvasRef}

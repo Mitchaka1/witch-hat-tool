@@ -3,7 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { BookOpen, Compass, PenTool, Search, Sparkles, X } from "lucide-react";
+import {
+  BookOpen,
+  Compass,
+  Gamepad2,
+  PenTool,
+  Search,
+  Sparkles,
+  X,
+} from "lucide-react";
 import signsData from "@/data/signs.json";
 import sigilsData from "@/data/sigils.json";
 import MagicCircle from "@/components/onboarding/MagicCircle";
@@ -202,6 +210,13 @@ export default function SymbolBrowser() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/prepare"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#963d22] bg-[#b64f2c] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#963d22] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e58a65]"
+            >
+              <Gamepad2 className="h-4 w-4" aria-hidden="true" />
+              Play Arena
+            </Link>
             <button
               type="button"
               onClick={startGuide}
