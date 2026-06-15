@@ -71,6 +71,25 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.game-page {
+  background-color: #151426;
+  background-image:
+    linear-gradient(rgba(18, 17, 34, 0.3), rgba(18, 17, 34, 0.72)),
+    url("/game/ink-arena.png");
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.arena-stage {
+  background-color: #17152b;
+  background-image:
+    linear-gradient(rgba(12, 11, 26, 0.08), rgba(12, 11, 26, 0.38)),
+    url("/game/ink-arena.png");
+  background-position: center;
+  background-size: cover;
+}
+
 /* Faint paper grain — gives surfaces a hand-made, atelier feel instead of flat fills. */
 .paper-grain {
   position: relative;
