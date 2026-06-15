@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import GrimoirePreview from "@/components/GrimoirePreview";
+import SpellFormula from "@/components/SpellFormula";
 import SpellList from "@/components/SpellList";
 import SpellTraceCanvas from "@/components/SpellTraceCanvas";
 import { demoSpellById, demoSpells } from "@/data/demoSpells";
@@ -175,6 +176,10 @@ export default function SpellPreparationScreen() {
                   {selectedSpell.preparationInkCost} ink
                 </p>
               </div>
+            </div>
+
+            <div className="mb-5">
+              <SpellFormula spell={selectedSpell} compact />
             </div>
 
             <SpellTraceCanvas

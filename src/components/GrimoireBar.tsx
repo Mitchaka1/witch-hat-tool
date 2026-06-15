@@ -1,4 +1,5 @@
-import Image from "next/image";
+import SpellSealPreview from "@/components/SpellSealPreview";
+import { demoSpellById } from "@/data/demoSpells";
 import type { PreparedSpell } from "@/lib/grimoireStorage";
 
 type GrimoireBarProps = {
@@ -17,6 +18,7 @@ export default function GrimoireBar({
       {pages.map((page, index) => {
         const selected = index === selectedIndex;
         const exhausted = page.remainingUses <= 0;
+        const definition = demoSpellById.get(page.spellId);
 
         return (
           <button
@@ -31,20 +33,15 @@ export default function GrimoireBar({
                 : "border-white/10 bg-white/5 text-white hover:bg-white/10"
             } ${exhausted ? "opacity-55" : ""}`}
           >
-            <span
-              className={`grid h-12 w-12 place-items-center rounded-lg p-1.5 ${
-                selected ? "bg-white/75" : "bg-white/10"
-              }`}
-            >
-              <Image
-                src={page.designImage}
-                alt=""
-                width={42}
-                height={42}
-                className={`h-full w-full object-contain ${
-                  selected ? "" : "brightness-0 invert"
-                }`}
-              />
+            <span className="h-12 w-12">
+              {definition ? (
+                <SpellSealPreview
+                  spell={definition}
+                  className={`h-full w-full ${
+                    selected ? "" : "brightness-75"
+                  }`}
+                />
+              ) : null}
             </span>
             <span className="min-w-0">
               <span

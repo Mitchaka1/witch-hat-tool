@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import {
   PointerEvent as ReactPointerEvent,
   useCallback,
   useRef,
 } from "react";
+import SpellSealPreview from "@/components/SpellSealPreview";
 import type { DemoSpell } from "@/data/demoSpells";
 import {
   scoreCircleQuality,
@@ -95,13 +95,10 @@ export default function SpellTraceCanvas({
   return (
     <div>
       <div className="relative mx-auto aspect-square w-full max-w-[520px] overflow-hidden rounded-full border-2 border-[var(--color-gold)] bg-[#f8efd9] shadow-[inset_0_0_42px_rgba(89,65,28,0.14),0_18px_55px_rgba(33,26,18,0.16)]">
-        <Image
-          src={spell.designImage}
-          alt={`${spell.name} tracing template`}
-          fill
-          priority
-          sizes="(max-width: 768px) 90vw, 520px"
-          className="pointer-events-none object-contain p-8 opacity-30"
+        <SpellSealPreview
+          spell={spell}
+          showLabels
+          className="pointer-events-none absolute inset-8 opacity-35"
         />
         <canvas
           ref={canvasRef}

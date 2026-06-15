@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   BookOpen,
@@ -19,12 +18,18 @@ import {
   useState,
 } from "react";
 import GrimoireBar from "@/components/GrimoireBar";
+import SpellSealPreview from "@/components/SpellSealPreview";
 import { demoSpellById, type DemoSpell } from "@/data/demoSpells";
 import { qualityLabel } from "@/lib/circleQuality";
+import {
+  getBattleIntro,
+  resolveJumpInput,
+} from "@/lib/combatControls";
 import {
   loadGrimoire,
   type PreparedSpell,
 } from "@/lib/grimoireStorage";
+import { findUsablePageIndex } from "@/lib/grimoireNavigation";
 import { getScaledSpellStats } from "@/lib/spellEffects";
 
 const STAGE_WIDTH = 960;
@@ -130,10 +135,13 @@ type Runtime = {
   aim: { x: number; y: number };
   status: GameStatus;
   lastTime: number;
+  battleStartsAt: number;
+  battleStarted: boolean;
   nextId: number;
   enemyAttackReadyAt: number;
   enemyShotReadyAt: number;
   enemyJumpAt: number;
+  jumpConsumed: boolean;
   speedBuffUntil: number;
   message: string;
   messageUntil: number;
@@ -187,10 +195,13 @@ function createRuntime(): Runtime {
     aim: { x: 700, y: 300 },
     status: "playing",
     lastTime: 0,
+    battleStartsAt: 0,
+    battleStarted: false,
     nextId: 1,
     enemyAttackReadyAt: 0,
     enemyShotReadyAt: 1700,
     enemyJumpAt: 1200,
+    jumpConsumed: false,
     speedBuffUntil: 0,
     message: "The duel begins.",
     messageUntil: 1600,
@@ -397,6 +408,23 @@ function updateRuntime(
     return;
   }
 
+  const intro = getBattleIntro(now, runtime.battleStartsAt);
+  if (!intro.active) {
+    runtime.message = intro.message;
+    runtime.messageUntil = runtime.battleStartsAt;
+    updateParticles(runtime, delta);
+    return;
+  }
+
+  if (!runtime.battleStarted) {
+    runtime.battleStarted = true;
+    runtime.enemyAttackReadyAt = now + 650;
+    runtime.enemyShotReadyAt = now + 1450;
+    runtime.enemyJumpAt = now + 1050;
+    runtime.message = intro.message;
+    runtime.messageUntil = now + 700;
+  }
+
   const buffActive = now < runtime.speedBuffUntil;
   const moveSpeed = buffActive ? 355 : 245;
   const jumpSpeed = buffActive ? 610 : 490;
@@ -407,7 +435,13 @@ function updateRuntime(
   if (playerDirection !== 0) {
     runtime.player.facing = playerDirection > 0 ? 1 : -1;
   }
-  if (controls.has("jump") && runtime.player.onGround) {
+  const jumpInput = resolveJumpInput(
+    controls.has("jump"),
+    runtime.jumpConsumed,
+    runtime.player.onGround,
+  );
+  runtime.jumpConsumed = jumpInput.consumed;
+  if (jumpInput.shouldJump) {
     runtime.player.vy = -jumpSpeed;
     runtime.player.onGround = false;
   }
@@ -459,7 +493,7 @@ function updateEnemy(runtime: Runtime, delta: number, now: number) {
   }
 
   runtime.enemy.facing = direction;
-  runtime.enemy.vx = distanceX > 58 ? direction * 158 * speedScale : 0;
+  runtime.enemy.vx = distanceX > 62 ? direction * 145 * speedScale : 0;
 
   if (now >= runtime.enemyJumpAt && runtime.enemy.onGround) {
     runtime.enemy.vy = -455;
@@ -472,8 +506,8 @@ function updateEnemy(runtime: Runtime, delta: number, now: number) {
     Math.abs(playerCenter.y - enemyCenter.y) < 70 &&
     now >= runtime.enemyAttackReadyAt
   ) {
-    damagePlayer(runtime, 9, 230, direction, now);
-    runtime.enemyAttackReadyAt = now + 920;
+    damagePlayer(runtime, 7, 205, direction, now);
+    runtime.enemyAttackReadyAt = now + 1100;
     runtime.message = "The rival strikes at close range.";
     runtime.messageUntil = now + 850;
   }
@@ -1044,7 +1078,12 @@ export default function ArenaGame() {
 
   const flipPage = useCallback(
     (direction: number) => {
-      selectPage(selectedIndexRef.current + direction);
+      const nextIndex = findUsablePageIndex(
+        pagesRef.current,
+        selectedIndexRef.current,
+        direction,
+      );
+      if (nextIndex >= 0) selectPage(nextIndex);
     },
     [selectPage],
   );
@@ -1083,6 +1122,7 @@ export default function ArenaGame() {
       now,
     );
 
+    const castIndex = selectedIndexRef.current;
     const updatedPages = pagesRef.current.map((current, index) =>
       index === selectedIndexRef.current
         ? { ...current, remainingUses: current.remainingUses - 1 }
@@ -1090,9 +1130,27 @@ export default function ArenaGame() {
     );
     pagesRef.current = updatedPages;
     setPages(updatedPages);
-    runtime.message = `${definition.name} cast.`;
+    const nextUsableIndex = findUsablePageIndex(
+      updatedPages,
+      castIndex,
+      1,
+      true,
+    );
+    const pageWasSpent = updatedPages[castIndex].remainingUses <= 0;
+
+    if (pageWasSpent && nextUsableIndex >= 0 && nextUsableIndex !== castIndex) {
+      selectPage(nextUsableIndex);
+      const nextSpell = demoSpellById.get(updatedPages[nextUsableIndex].spellId);
+      runtime.message = `${definition.name} spent. ${
+        nextSpell?.name ?? "Next page"
+      } ready.`;
+    } else if (nextUsableIndex < 0) {
+      runtime.message = "Every prepared page is spent. Restart or reprepare.";
+    } else {
+      runtime.message = `${definition.name} cast.`;
+    }
     runtime.messageUntil = now + 950;
-  }, []);
+  }, [selectPage]);
 
   const resetBattle = useCallback(() => {
     const freshPages = initialPagesRef.current.map((page) => ({
@@ -1120,7 +1178,10 @@ export default function ArenaGame() {
     let animationFrame = 0;
     const tick = (timestamp: number) => {
       const runtime = runtimeRef.current;
-      if (runtime.lastTime === 0) runtime.lastTime = timestamp;
+      if (runtime.lastTime === 0) {
+        runtime.lastTime = timestamp;
+        runtime.battleStartsAt = timestamp + 2400;
+      }
       const delta = Math.min((timestamp - runtime.lastTime) / 1000, 0.034);
       runtime.lastTime = timestamp;
       updateRuntime(runtime, delta, timestamp, controlsRef.current);
@@ -1237,6 +1298,7 @@ export default function ArenaGame() {
 
   const selectedPage = pages[selectedIndex] ?? pages[0];
   const selectedDefinition = demoSpellById.get(selectedPage.spellId);
+  const allPagesSpent = pages.every((page) => page.remainingUses <= 0);
 
   return (
     <main className="game-page min-h-screen px-3 py-4 text-white sm:px-5">
@@ -1294,6 +1356,7 @@ export default function ArenaGame() {
               width={STAGE_WIDTH}
               height={STAGE_HEIGHT}
               aria-label="Ink Grimoire Arena combat stage"
+              onPointerDown={handlePointerMove}
               onPointerMove={handlePointerMove}
               onClick={castSelectedSpell}
               className="absolute inset-0 h-full w-full cursor-crosshair touch-none"
@@ -1343,17 +1406,39 @@ export default function ArenaGame() {
           </div>
         </section>
 
+        <div className="mx-auto mt-3 grid max-w-[960px] grid-cols-4 gap-2 sm:hidden">
+          <ControlButton
+            label="Left"
+            onChange={(active) => setControl("left", active)}
+          />
+          <ControlButton
+            label="Jump"
+            onChange={(active) => setControl("jump", active)}
+          />
+          <ControlButton
+            label="Right"
+            onChange={(active) => setControl("right", active)}
+          />
+          <button
+            type="button"
+            onClick={castSelectedSpell}
+            disabled={selectedPage.remainingUses <= 0 || allPagesSpent}
+            className="rounded-xl bg-[#b64f2c] px-3 py-3 text-sm font-bold shadow-lg disabled:opacity-35"
+          >
+            Cast
+          </button>
+        </div>
+
         <section className="mt-3 grid gap-3 lg:grid-cols-[360px_1fr]">
           <article className="rounded-2xl border border-white/10 bg-[#17152b]/95 p-3 shadow-xl">
             <div className="flex items-center gap-3">
-              <div className="grid h-20 w-20 shrink-0 place-items-center rounded-xl bg-[#fff7dc] p-2">
-                <Image
-                  src={selectedPage.designImage}
-                  alt=""
-                  width={72}
-                  height={72}
-                  className="h-full w-full object-contain"
-                />
+              <div className="h-20 w-20 shrink-0">
+                {selectedDefinition ? (
+                  <SpellSealPreview
+                    spell={selectedDefinition}
+                    className="h-full w-full border border-[#d9bd70]/45"
+                  />
+                ) : null}
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d9bd70]">
@@ -1370,6 +1455,14 @@ export default function ArenaGame() {
                 <p className="mt-1 line-clamp-1 text-xs text-white/70">
                   {selectedDefinition?.shortEffect}
                 </p>
+                {selectedDefinition ? (
+                  <p className="mt-1 truncate text-[10px] font-bold uppercase tracking-[0.1em] text-[#d9bd70]">
+                    {selectedDefinition.publicName} ·{" "}
+                    {selectedDefinition.libraryComponents
+                      .map((component) => component.name)
+                      .join(" + ")}
+                  </p>
+                ) : null}
               </div>
             </div>
             <div className="mt-3 grid grid-cols-[44px_1fr_44px] gap-2">
@@ -1384,7 +1477,7 @@ export default function ArenaGame() {
               <button
                 type="button"
                 onClick={castSelectedSpell}
-                disabled={selectedPage.remainingUses <= 0}
+                disabled={selectedPage.remainingUses <= 0 || allPagesSpent}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#b64f2c] px-4 py-3 font-[family-name:var(--font-cinzel)] font-semibold shadow-lg transition hover:bg-[#963d22] disabled:opacity-35"
               >
                 <Crosshair className="h-4 w-4" aria-hidden="true" />
@@ -1418,27 +1511,6 @@ export default function ArenaGame() {
           </div>
         </section>
 
-        <div className="mt-3 grid grid-cols-4 gap-2 sm:hidden">
-          <ControlButton
-            label="Left"
-            onChange={(active) => setControl("left", active)}
-          />
-          <ControlButton
-            label="Jump"
-            onChange={(active) => setControl("jump", active)}
-          />
-          <ControlButton
-            label="Right"
-            onChange={(active) => setControl("right", active)}
-          />
-          <button
-            type="button"
-            onClick={castSelectedSpell}
-            className="rounded-xl bg-[#b64f2c] px-3 py-3 text-sm font-bold"
-          >
-            Cast
-          </button>
-        </div>
       </div>
     </main>
   );

@@ -1,5 +1,6 @@
-import Image from "next/image";
 import { Trash2 } from "lucide-react";
+import SpellSealPreview from "@/components/SpellSealPreview";
+import { demoSpellById } from "@/data/demoSpells";
 import { qualityLabel } from "@/lib/circleQuality";
 import type { PreparedSpell } from "@/lib/grimoireStorage";
 
@@ -29,22 +30,24 @@ export default function GrimoirePreview({
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {prepared.map((spell, index) => (
-        <article
-          key={spell.preparedId}
-          className="relative overflow-hidden rounded-xl border border-[var(--color-line)] bg-[#fffaf0] p-3 shadow-sm"
-        >
-          <div className="absolute inset-y-0 left-0 w-1 bg-[var(--color-gold)]" />
-          <div className="flex gap-3">
-            <div className="grid h-20 w-20 shrink-0 place-items-center rounded-lg border border-[var(--color-line)] bg-white/60 p-2">
-              <Image
-                src={spell.designImage}
-                alt=""
-                width={64}
-                height={64}
-                className="h-full w-full object-contain"
-              />
-            </div>
+      {prepared.map((spell, index) => {
+        const definition = demoSpellById.get(spell.spellId);
+
+        return (
+          <article
+            key={spell.preparedId}
+            className="relative overflow-hidden rounded-xl border border-[var(--color-line)] bg-[#fffaf0] p-3 shadow-sm"
+          >
+            <div className="absolute inset-y-0 left-0 w-1 bg-[var(--color-gold)]" />
+            <div className="flex gap-3">
+              <div className="h-20 w-20 shrink-0">
+                {definition ? (
+                  <SpellSealPreview
+                    spell={definition}
+                    className="h-full w-full border border-[var(--color-line)]"
+                  />
+                ) : null}
+              </div>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--color-gold)]">
                 Page {index + 1}
@@ -59,6 +62,14 @@ export default function GrimoirePreview({
               <p className="mt-1 font-mono text-xs font-semibold text-ink">
                 {spell.remainingUses} uses · Power {Math.round(spell.expectedPower)}
               </p>
+              {definition ? (
+                <p className="mt-1 truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-gold)]">
+                  {definition.publicName} ·{" "}
+                  {definition.libraryComponents
+                    .map((component) => component.name)
+                    .join(" + ")}
+                </p>
+              ) : null}
             </div>
             <button
               type="button"
@@ -68,9 +79,10 @@ export default function GrimoirePreview({
             >
               <Trash2 className="h-4 w-4" aria-hidden="true" />
             </button>
-          </div>
-        </article>
-      ))}
+            </div>
+          </article>
+        );
+      })}
     </div>
   );
 }
