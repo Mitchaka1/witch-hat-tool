@@ -333,6 +333,21 @@ function categoryLabel(value: string) {
     .join(" ");
 }
 
+function confidenceLabel(score: number): {
+  label: string;
+  tone: "strong" | "likely" | "weak";
+} {
+  if (score >= 0.6) {
+    return { label: "Strong match", tone: "strong" };
+  }
+
+  if (score >= MATCH_THRESHOLD) {
+    return { label: "Likely match", tone: "likely" };
+  }
+
+  return { label: "Faint resemblance", tone: "weak" };
+}
+
 function referenceKey(reference: SymbolReference) {
   return `${reference.type}:${reference.id}`;
 }
@@ -1663,6 +1678,7 @@ export default function DrawingIdentifier() {
   const [showSymbolShelf, setShowSymbolShelf] = useState(false);
   const [showChangeSymbolPicker, setShowChangeSymbolPicker] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [isMatching, setIsMatching] = useState(false);
 
   useEffect(() => {
     activeSymbolIdRef.current = activeSymbolId;
@@ -1785,6 +1801,12 @@ export default function DrawingIdentifier() {
   }, []);
 
   useEffect(() => {
+    // While a freehand stroke is in progress we paint it imperatively for low
+    // latency; skip the full async redraw so it cannot wipe the live ink.
+    if (isLiveDrawingRef.current) {
+      return;
+    }
+
     let cancelled = false;
 
     redrawSpellCanvas({
@@ -1831,13 +1853,20 @@ export default function DrawingIdentifier() {
     }
 
     const timeoutId = window.setTimeout(() => {
+      // Defer while a stroke is still being drawn; recompute once it commits.
+      if (isLiveDrawingRef.current) {
+        return;
+      }
+
       if (!activeSymbol) {
         setMatches([]);
         setStatus(`Ready to compare against ${preparedRef.current.length} drawable symbols.`);
+        setIsMatching(false);
         return;
       }
 
       updateMatches("live");
+      setIsMatching(false);
     }, LIVE_MATCH_DELAY);
 
     return () => {
@@ -1936,6 +1965,100 @@ export default function DrawingIdentifier() {
     setSelectedCircleIds(new Set());
     setMatches([]);
     setStatus("Erased ink.");
+  }
+
+  function liveContext() {
+    return canvasRef.current?.getContext("2d") ?? null;
+  }
+
+  // Paint a freehand stroke directly onto the canvas as the pointer moves so
+  // inking feels instant, instead of round-tripping through React state and a
+  // full redraw on every move.
+  function beginLiveStroke(point: Point) {
+    const context = liveContext();
+
+    if (!context) {
+      return;
+    }
+
+    liveLastPointRef.current = point;
+    liveLastMidRef.current = point;
+    context.save();
+    context.fillStyle = "#000000";
+    context.beginPath();
+    context.arc(point.x, point.y, DRAW_LINE_WIDTH / 2, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+  }
+
+  function extendLiveStroke(point: Point) {
+    const context = liveContext();
+    const last = liveLastPointRef.current;
+    const lastMid = liveLastMidRef.current;
+
+    if (!context || !last || !lastMid) {
+      return;
+    }
+
+    const mid = { x: (last.x + point.x) / 2, y: (last.y + point.y) / 2 };
+
+    context.save();
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.strokeStyle = "#000000";
+    context.lineWidth = DRAW_LINE_WIDTH;
+    context.beginPath();
+    context.moveTo(lastMid.x, lastMid.y);
+    context.quadraticCurveTo(last.x, last.y, mid.x, mid.y);
+    context.stroke();
+    context.restore();
+
+    liveLastPointRef.current = point;
+    liveLastMidRef.current = mid;
+  }
+
+  // High-fidelity input: capture every coalesced pointer sample, not just the
+  // one delivered with this move event.
+  function coalescedCanvasPoints(event: PointerEvent<HTMLCanvasElement>): Point[] {
+    const native = event.nativeEvent;
+    const samples =
+      typeof native.getCoalescedEvents === "function"
+        ? native.getCoalescedEvents()
+        : [native];
+    const source = samples.length > 0 ? samples : [native];
+
+    return source
+      .map((sample) => canvasPointFromClient(sample.clientX, sample.clientY, canvasRef.current))
+      .filter((point): point is Point => Boolean(point));
+  }
+
+  // Commit the imperatively-drawn stroke into React state once, on pointer up.
+  function commitLiveStroke() {
+    const stroke = activeStrokeRef.current;
+    const activeId = activeSymbolIdRef.current;
+
+    if (!activeId || stroke.length === 0) {
+      return;
+    }
+
+    setSymbols((current) =>
+      current.map((symbol) => {
+        if (symbol.id !== activeId || symbol.replacement) {
+          return symbol;
+        }
+
+        const nextMarks = symbol.marks.slice();
+        const lastIndex = nextMarks.length - 1;
+        const latest = nextMarks[lastIndex];
+
+        if (!latest || latest.tool !== "pen") {
+          return { ...symbol, marks: [...nextMarks, { tool: "pen", points: stroke }] };
+        }
+
+        nextMarks[lastIndex] = { ...latest, points: stroke };
+        return { ...symbol, marks: nextMarks };
+      }),
+    );
   }
 
   function startDrawing(event: PointerEvent<HTMLCanvasElement>) {
@@ -2069,6 +2192,8 @@ export default function DrawingIdentifier() {
     }
 
     activeStrokeRef.current = [point];
+    isLiveDrawingRef.current = true;
+    beginLiveStroke(point);
 
     setSymbols((current) => {
       const currentActiveId = activeSymbolIdRef.current;
@@ -2320,36 +2445,15 @@ export default function DrawingIdentifier() {
       return;
     }
 
-    if (toolMode === "pen") {
-      activeStrokeRef.current = [...activeStrokeRef.current, point];
+    // Pen: accumulate every coalesced sample inside the canvas and paint the
+    // new segments imperatively. No state update or redraw happens mid-stroke.
+    const additions = coalescedCanvasPoints(event).filter(isInsideCanvasCircle);
+    const points = additions.length > 0 ? additions : [point];
+
+    for (const next of points) {
+      activeStrokeRef.current = [...activeStrokeRef.current, next];
+      extendLiveStroke(next);
     }
-
-    const currentActiveId = activeSymbolIdRef.current;
-
-    setSymbols((current) =>
-      current.map((symbol) => {
-        if (symbol.id !== currentActiveId || symbol.replacement) {
-          return symbol;
-        }
-
-        const nextMarks = symbol.marks.slice();
-        const latest = nextMarks[nextMarks.length - 1];
-
-        if (!latest || latest.tool !== "pen") {
-          return {
-            ...symbol,
-            marks: [...nextMarks, { tool: "pen", points: [point] }],
-          };
-        }
-
-        nextMarks[nextMarks.length - 1] = {
-          ...latest,
-          points: [...latest.points, point],
-        };
-
-        return { ...symbol, marks: nextMarks };
-      }),
-    );
   }
 
   function triggerCircleGlow(id: string) {
@@ -2463,10 +2567,19 @@ export default function DrawingIdentifier() {
       interactionRef.current = null;
     }
 
-    if (toolMode === "pen") {
-      storeClosedSpellBoundary();
+    if (toolMode === "pen" && isLiveDrawingRef.current) {
+      // Persist the live stroke in one update, then decide if it sealed a circle.
+      commitLiveStroke();
+      const becameCircle = storeClosedSpellBoundary();
+
+      if (!becameCircle && activeStrokeRef.current.length > 1) {
+        setIsMatching(true);
+      }
     }
 
+    isLiveDrawingRef.current = false;
+    liveLastPointRef.current = null;
+    liveLastMidRef.current = null;
     activeStrokeRef.current = [];
 
     if (
@@ -3736,14 +3849,24 @@ export default function DrawingIdentifier() {
             <div className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] p-5 shadow-sm">
               <div className="mb-4 flex items-center justify-between gap-2">
                 <h2 className="text-xl font-semibold text-ink">Matches</h2>
-                <span className="rounded bg-[var(--color-surface-sunken)] px-2.5 py-1 text-xs font-semibold uppercase text-ink-soft">
-                  {filteredMatches.length || 0}
-                </span>
+                {isMatching ? (
+                  <span className="inline-flex items-center gap-2 rounded bg-[var(--color-arcane)]/10 px-2.5 py-1 text-xs font-semibold text-[var(--color-arcane)]">
+                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--color-arcane)]/30 border-t-[var(--color-arcane)]" />
+                    Reading
+                  </span>
+                ) : (
+                  <span className="rounded bg-[var(--color-surface-sunken)] px-2.5 py-1 text-xs font-semibold uppercase text-ink-soft">
+                    {filteredMatches.length || 0}
+                  </span>
+                )}
               </div>
 
               {filteredMatches.length > 0 ? (
                 <div className="space-y-3">
-                  {filteredMatches.map((match) => (
+                  {filteredMatches.map((match) => {
+                    const confidence = confidenceLabel(match.score);
+
+                    return (
                     <button
                       key={`${match.type}-${match.id}`}
                       type="button"
@@ -3780,16 +3903,44 @@ export default function DrawingIdentifier() {
                           <p className="text-xs font-medium uppercase text-ink-faint">
                             {categoryLabel(match.category)}
                           </p>
-                          <p className="text-sm font-semibold text-[var(--color-gold)]">
-                            {Math.round(match.score * 100)}% match
-                          </p>
+                          <div className="space-y-1 pt-0.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <span
+                                className={`text-xs font-bold uppercase tracking-wide ${
+                                  confidence.tone === "strong"
+                                    ? "text-[var(--color-arcane)]"
+                                    : confidence.tone === "likely"
+                                      ? "text-[var(--color-gold)]"
+                                      : "text-ink-faint"
+                                }`}
+                              >
+                                {confidence.label}
+                              </span>
+                              <span className="text-xs font-semibold text-ink-soft">
+                                {Math.round(match.score * 100)}%
+                              </span>
+                            </div>
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-surface-sunken)]">
+                              <div
+                                className={`h-full rounded-full ${
+                                  confidence.tone === "strong"
+                                    ? "bg-[var(--color-arcane)]"
+                                    : confidence.tone === "likely"
+                                      ? "bg-[var(--color-gold)]"
+                                      : "bg-[var(--color-line-strong)]"
+                                }`}
+                                style={{ width: `${Math.max(6, Math.round(match.score * 100))}%` }}
+                              />
+                            </div>
+                          </div>
                           <p className="text-xs font-medium text-ink-faint">
-                            Angle {match.detectedRotation} deg
+                            Rotated {match.detectedRotation}&deg;
                           </p>
                         </div>
                       </div>
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="rounded-md border border-dashed border-[var(--color-line)] p-8 text-center text-sm font-medium text-ink-soft">
@@ -4487,15 +4638,34 @@ function drawMark(context: CanvasRenderingContext2D, mark: Mark, lineWidth = DRA
   context.lineJoin = "round";
   context.strokeStyle = "#000000";
   context.lineWidth = lineWidth;
+
+  // A single tap renders as a round dot.
+  if (stroke.length === 1) {
+    context.fillStyle = "#000000";
+    context.beginPath();
+    context.arc(stroke[0].x, stroke[0].y, lineWidth / 2, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+    return;
+  }
+
   context.beginPath();
   context.moveTo(stroke[0].x, stroke[0].y);
 
-  if (stroke.length === 1) {
-    context.lineTo(stroke[0].x + 0.1, stroke[0].y + 0.1);
-  }
+  if (stroke.length === 2) {
+    context.lineTo(stroke[1].x, stroke[1].y);
+  } else {
+    // Smooth the polyline with a quadratic curve through each segment's
+    // midpoint, using the raw points as control points. Far less jagged than
+    // straight lineTo joins, and consistent with the live-ink preview.
+    for (let index = 1; index < stroke.length - 1; index += 1) {
+      const midX = (stroke[index].x + stroke[index + 1].x) / 2;
+      const midY = (stroke[index].y + stroke[index + 1].y) / 2;
+      context.quadraticCurveTo(stroke[index].x, stroke[index].y, midX, midY);
+    }
 
-  for (let index = 1; index < stroke.length; index += 1) {
-    context.lineTo(stroke[index].x, stroke[index].y);
+    const last = stroke[stroke.length - 1];
+    context.lineTo(last.x, last.y);
   }
 
   context.stroke();
