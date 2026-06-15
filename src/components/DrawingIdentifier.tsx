@@ -1629,6 +1629,9 @@ export default function DrawingIdentifier() {
   const canvasViewportRef = useRef<HTMLDivElement | null>(null);
   const drawingRef = useRef(false);
   const activeStrokeRef = useRef<Stroke>([]);
+  const liveLastPointRef = useRef<Point | null>(null);
+  const liveLastMidRef = useRef<Point | null>(null);
+  const isLiveDrawingRef = useRef(false);
   const interactionRef = useRef<InteractionState | null>(null);
   const activeSymbolIdRef = useRef<string | null>(null);
   const selectedCircleIdRef = useRef<string | null>(null);
@@ -3427,7 +3430,7 @@ export default function DrawingIdentifier() {
 
         <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
           <div className="space-y-4">
-            <div className="rounded-md border border-stone-300 bg-white p-3 shadow-sm">
+            <div className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] p-3 shadow-sm">
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 {(["all", "sign", "sigil"] as const).map((type) => (
                   <button
@@ -3439,8 +3442,8 @@ export default function DrawingIdentifier() {
                     }}
                     className={`rounded px-4 py-2 text-sm font-semibold capitalize transition ${
                       activeType === type
-                        ? "bg-stone-950 text-stone-50"
-                        : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                        ? "bg-[var(--color-arcane)] text-[var(--color-parchment-bright)]"
+                        : "bg-[var(--color-surface-sunken)] text-ink-soft hover:bg-[var(--color-surface)]"
                     }`}
                   >
                     {type === "all" ? "All symbols" : `${type}s`}
@@ -3449,19 +3452,19 @@ export default function DrawingIdentifier() {
                 <button
                   type="button"
                   onClick={startNewSymbol}
-                  className="inline-flex items-center gap-2 rounded bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-200"
+                  className="inline-flex items-center gap-2 rounded bg-[var(--color-gold-soft)] px-4 py-2 text-sm font-semibold text-[var(--color-gold)] transition hover:bg-[var(--color-gold-bright)]"
                 >
                   <Plus className="h-4 w-4" aria-hidden="true" />
                   New symbol
                 </button>
-                <div className="grid grid-cols-3 rounded-md border border-stone-300 bg-stone-100 p-1">
+                <div className="grid grid-cols-3 rounded-md border border-[var(--color-line)] bg-[var(--color-surface-sunken)] p-1">
                   <button
                     type="button"
                     onClick={() => setToolMode("select")}
                     className={`inline-flex items-center justify-center rounded px-3 py-1.5 text-sm font-semibold transition ${
                       toolMode === "select"
-                        ? "bg-stone-950 text-stone-50"
-                        : "text-stone-700 hover:bg-stone-200"
+                        ? "bg-[var(--color-arcane)] text-[var(--color-parchment-bright)]"
+                        : "text-ink-soft hover:bg-[var(--color-surface)]"
                     }`}
                   >
                     Select
@@ -3471,8 +3474,8 @@ export default function DrawingIdentifier() {
                     onClick={() => setToolMode("pen")}
                     className={`inline-flex items-center justify-center gap-2 rounded px-3 py-1.5 text-sm font-semibold transition ${
                       toolMode === "pen"
-                        ? "bg-stone-950 text-stone-50"
-                        : "text-stone-700 hover:bg-stone-200"
+                        ? "bg-[var(--color-arcane)] text-[var(--color-parchment-bright)]"
+                        : "text-ink-soft hover:bg-[var(--color-surface)]"
                     }`}
                   >
                     <PenTool className="h-4 w-4" aria-hidden="true" />
@@ -3483,8 +3486,8 @@ export default function DrawingIdentifier() {
                     onClick={() => setToolMode("eraser")}
                     className={`inline-flex items-center justify-center gap-2 rounded px-3 py-1.5 text-sm font-semibold transition ${
                       toolMode === "eraser"
-                        ? "bg-stone-950 text-stone-50"
-                        : "text-stone-700 hover:bg-stone-200"
+                        ? "bg-[var(--color-arcane)] text-[var(--color-parchment-bright)]"
+                        : "text-ink-soft hover:bg-[var(--color-surface)]"
                     }`}
                   >
                     <Eraser className="h-4 w-4" aria-hidden="true" />
@@ -3493,11 +3496,11 @@ export default function DrawingIdentifier() {
                 </div>
               </div>
 
-              <div className="mb-3 flex flex-wrap items-center gap-2 border-t border-stone-200 pt-3">
+              <div className="mb-3 flex flex-wrap items-center gap-2 border-t border-[var(--color-line)] pt-3">
                 <button
                   type="button"
                   onClick={() => changeZoom(zoom - ZOOM_STEP)}
-                  className="grid h-9 w-9 place-items-center rounded border border-stone-300 bg-white text-stone-700 transition hover:border-amber-600 hover:text-stone-950"
+                  className="grid h-9 w-9 place-items-center rounded border border-[var(--color-line)] bg-[var(--color-surface)] text-ink-soft transition hover:border-[var(--color-gold)] hover:text-ink"
                   aria-label="Zoom out"
                   title="Zoom out"
                 >
@@ -3511,12 +3514,12 @@ export default function DrawingIdentifier() {
                   step={ZOOM_STEP}
                   value={zoom}
                   onChange={(event) => changeZoom(Number(event.target.value))}
-                  className="h-9 min-w-44 flex-1 accent-stone-950"
+                  className="h-9 min-w-44 flex-1 accent-[var(--color-arcane)]"
                 />
                 <button
                   type="button"
                   onClick={() => changeZoom(zoom + ZOOM_STEP)}
-                  className="grid h-9 w-9 place-items-center rounded border border-stone-300 bg-white text-stone-700 transition hover:border-amber-600 hover:text-stone-950"
+                  className="grid h-9 w-9 place-items-center rounded border border-[var(--color-line)] bg-[var(--color-surface)] text-ink-soft transition hover:border-[var(--color-gold)] hover:text-ink"
                   aria-label="Zoom in"
                   title="Zoom in"
                 >
@@ -3525,13 +3528,13 @@ export default function DrawingIdentifier() {
                 <button
                   type="button"
                   onClick={() => changeZoom(1)}
-                  className="grid h-9 w-9 place-items-center rounded border border-stone-300 bg-white text-stone-700 transition hover:border-amber-600 hover:text-stone-950"
+                  className="grid h-9 w-9 place-items-center rounded border border-[var(--color-line)] bg-[var(--color-surface)] text-ink-soft transition hover:border-[var(--color-gold)] hover:text-ink"
                   aria-label="Reset zoom"
                   title="Reset zoom"
                 >
                   <RotateCcw className="h-4 w-4" aria-hidden="true" />
                 </button>
-                <span className="rounded bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-700">
+                <span className="rounded bg-[var(--color-surface-sunken)] px-2.5 py-1 text-xs font-semibold text-ink-soft">
                   {Math.round(zoom * 100)}%
                 </span>
               </div>
@@ -3539,7 +3542,7 @@ export default function DrawingIdentifier() {
               <div
                 ref={canvasViewportRef}
                 onWheel={handleCanvasWheel}
-                className="relative h-[72vh] min-h-96 overflow-auto rounded border border-stone-300 bg-stone-200 p-6 shadow-inner"
+                className="relative h-[72vh] min-h-96 overflow-auto rounded border border-[var(--color-line)] bg-[var(--color-surface-sunken)] p-6 shadow-inner"
               >
                 <div className="grid min-h-full min-w-full place-items-center">
                   <canvas
@@ -3552,7 +3555,7 @@ export default function DrawingIdentifier() {
                     onPointerCancel={stopDrawing}
                     onMouseDown={handleCanvasMouseDown}
                     onContextMenu={handleCanvasContextMenu}
-                    className="block aspect-square touch-none rounded-full bg-white shadow-sm ring-1 ring-stone-400"
+                    className="block aspect-square touch-none rounded-full bg-[#ffffff] shadow-sm ring-1 ring-[var(--color-line-strong)]"
                     style={{
                       cursor:
                         toolMode === "pen"
@@ -3568,26 +3571,26 @@ export default function DrawingIdentifier() {
                   />
                 </div>
                 {importState ? (
-                  <div className="absolute inset-0 z-10 grid place-items-center bg-stone-950/45 p-6 backdrop-blur-[2px]">
-                    <div className="w-full max-w-sm rounded-md border border-stone-200 bg-white p-5 shadow-xl">
+                  <div className="absolute inset-0 z-10 grid place-items-center bg-[var(--color-ink)]/45 p-6 backdrop-blur-[2px]">
+                    <div className="w-full max-w-sm rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] p-5 shadow-xl">
                       <div className="mb-4 flex items-center gap-3">
-                        <div className="h-9 w-9 animate-spin rounded-full border-4 border-stone-200 border-t-stone-950" />
+                        <div className="h-9 w-9 animate-spin rounded-full border-4 border-[var(--color-line)] border-t-[var(--color-arcane)]" />
                         <div>
-                          <p className="text-sm font-semibold text-stone-950">
+                          <p className="text-sm font-semibold text-ink">
                             {importState.phase}
                           </p>
-                          <p className="text-sm font-medium text-stone-600">
+                          <p className="text-sm font-medium text-ink-soft">
                             {importState.detail}
                           </p>
                         </div>
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-stone-200">
+                      <div className="h-2 overflow-hidden rounded-full bg-[var(--color-surface-sunken)]">
                         <div
-                          className="h-full rounded-full bg-stone-950 transition-all duration-300"
+                          className="h-full rounded-full bg-[var(--color-arcane)] transition-all duration-300"
                           style={{ width: `${Math.round(importState.progress * 100)}%` }}
                         />
                       </div>
-                      <p className="mt-3 text-xs font-semibold uppercase text-stone-500">
+                      <p className="mt-3 text-xs font-semibold uppercase text-ink-faint">
                         {Math.round(importState.progress * 100)}%
                       </p>
                     </div>
@@ -3608,10 +3611,10 @@ export default function DrawingIdentifier() {
                 type="button"
                 onClick={() => importInputRef.current?.click()}
                 disabled={Boolean(importState)}
-                className="inline-flex h-11 items-center gap-2 rounded border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-700 transition hover:border-amber-600 hover:text-stone-950 disabled:cursor-wait disabled:text-stone-400"
+                className="inline-flex h-11 items-center gap-2 rounded border border-[var(--color-line)] bg-[var(--color-surface)] px-4 text-sm font-semibold text-ink-soft transition hover:border-[var(--color-gold)] hover:text-ink disabled:cursor-wait disabled:text-ink-faint"
               >
                 {importState ? (
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-stone-300 border-t-stone-950" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-line)] border-t-[var(--color-arcane)]" />
                 ) : (
                   <Upload className="h-4 w-4" aria-hidden="true" />
                 )}
@@ -3622,8 +3625,8 @@ export default function DrawingIdentifier() {
                 onClick={() => setShowSymbolShelf((current) => !current)}
                 className={`inline-flex h-11 items-center gap-2 rounded border px-4 text-sm font-semibold transition ${
                   showSymbolShelf
-                    ? "border-stone-950 bg-stone-950 text-stone-50"
-                    : "border-stone-300 bg-white text-stone-700 hover:border-amber-600 hover:text-stone-950"
+                    ? "border-[var(--color-arcane)] bg-[var(--color-arcane)] text-[var(--color-parchment-bright)]"
+                    : "border-[var(--color-line)] bg-[var(--color-surface)] text-ink-soft hover:border-[var(--color-gold)] hover:text-ink"
                 }`}
               >
                 <Library className="h-4 w-4" aria-hidden="true" />
@@ -3633,7 +3636,7 @@ export default function DrawingIdentifier() {
                 type="button"
                 onClick={() => updateMatches("manual")}
                 disabled={!isReady || !activeSymbol}
-                className="inline-flex h-11 items-center gap-2 rounded bg-stone-950 px-5 text-sm font-semibold text-stone-50 transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400"
+                className="inline-flex h-11 items-center gap-2 rounded bg-[var(--color-arcane)] px-5 text-sm font-semibold text-[var(--color-parchment-bright)] transition hover:bg-[var(--color-arcane-bright)] disabled:cursor-not-allowed disabled:bg-[var(--color-line-strong)]"
               >
                 <Search className="h-4 w-4" aria-hidden="true" />
                 Refresh matches
@@ -3642,7 +3645,7 @@ export default function DrawingIdentifier() {
                 type="button"
                 onClick={undoStroke}
                 disabled={!activeSymbolId}
-                className="inline-flex h-11 items-center gap-2 rounded border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-700 transition hover:border-amber-600 hover:text-stone-950 disabled:cursor-not-allowed disabled:text-stone-400"
+                className="inline-flex h-11 items-center gap-2 rounded border border-[var(--color-line)] bg-[var(--color-surface)] px-4 text-sm font-semibold text-ink-soft transition hover:border-[var(--color-gold)] hover:text-ink disabled:cursor-not-allowed disabled:text-ink-faint"
               >
                 <Undo2 className="h-4 w-4" aria-hidden="true" />
                 Undo active
@@ -3651,7 +3654,7 @@ export default function DrawingIdentifier() {
                 type="button"
                 onClick={copySelection}
                 disabled={!hasSelection}
-                className="inline-flex h-11 items-center gap-2 rounded border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-700 transition hover:border-amber-600 hover:text-stone-950 disabled:cursor-not-allowed disabled:text-stone-400"
+                className="inline-flex h-11 items-center gap-2 rounded border border-[var(--color-line)] bg-[var(--color-surface)] px-4 text-sm font-semibold text-ink-soft transition hover:border-[var(--color-gold)] hover:text-ink disabled:cursor-not-allowed disabled:text-ink-faint"
               >
                 <Copy className="h-4 w-4" aria-hidden="true" />
                 Copy
@@ -3660,7 +3663,7 @@ export default function DrawingIdentifier() {
                 type="button"
                 onClick={pasteClipboard}
                 disabled={!clipboard}
-                className="inline-flex h-11 items-center gap-2 rounded border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-700 transition hover:border-amber-600 hover:text-stone-950 disabled:cursor-not-allowed disabled:text-stone-400"
+                className="inline-flex h-11 items-center gap-2 rounded border border-[var(--color-line)] bg-[var(--color-surface)] px-4 text-sm font-semibold text-ink-soft transition hover:border-[var(--color-gold)] hover:text-ink disabled:cursor-not-allowed disabled:text-ink-faint"
               >
                 <ClipboardPaste className="h-4 w-4" aria-hidden="true" />
                 Paste
@@ -3668,21 +3671,21 @@ export default function DrawingIdentifier() {
               <button
                 type="button"
                 onClick={clearDrawing}
-                className="inline-flex h-11 items-center gap-2 rounded border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-700 transition hover:border-amber-600 hover:text-stone-950"
+                className="inline-flex h-11 items-center gap-2 rounded border border-[var(--color-line)] bg-[var(--color-surface)] px-4 text-sm font-semibold text-ink-soft transition hover:border-[var(--color-gold)] hover:text-ink"
               >
                 <Eraser className="h-4 w-4" aria-hidden="true" />
                 Clear canvas
               </button>
-              <p className="text-sm font-medium text-stone-600">{status}</p>
+              <p className="text-sm font-medium text-ink-soft">{status}</p>
             </div>
 
             {showSymbolShelf ? (
-              <div className="rounded-md border border-stone-300 bg-white p-3 shadow-sm">
+              <div className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] p-3 shadow-sm">
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-700">
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-soft">
                     Signs and Sigils
                   </h2>
-                  <span className="rounded bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-600">
+                  <span className="rounded bg-[var(--color-surface-sunken)] px-2.5 py-1 text-xs font-semibold text-ink-soft">
                     {shelfSymbols.length}
                   </span>
                 </div>
@@ -3694,7 +3697,7 @@ export default function DrawingIdentifier() {
                         key={`${reference.type}-${reference.id}`}
                         type="button"
                         onClick={() => insertPreparedSymbol(reference)}
-                        className="flex min-h-20 items-center gap-3 rounded border border-stone-200 bg-stone-50 p-2 text-left transition hover:border-stone-950 hover:bg-white"
+                        className="flex min-h-20 items-center gap-3 rounded border border-[var(--color-line)] bg-[var(--color-surface-sunken)] p-2 text-left transition hover:border-[var(--color-gold)] hover:bg-[var(--color-surface)]"
                       >
                         {reference.assetPath ? (
                           <Image
@@ -3705,15 +3708,15 @@ export default function DrawingIdentifier() {
                             className="h-13 w-13 shrink-0 object-contain"
                           />
                         ) : (
-                          <div className="grid h-13 w-13 shrink-0 place-items-center rounded border border-dashed border-stone-300 text-[10px] font-semibold uppercase text-stone-500">
+                          <div className="grid h-13 w-13 shrink-0 place-items-center rounded border border-dashed border-[var(--color-line)] text-[10px] font-semibold uppercase text-ink-faint">
                             No vector
                           </div>
                         )}
                         <span className="min-w-0">
-                          <span className="block truncate text-sm font-semibold text-stone-950">
+                          <span className="block truncate text-sm font-semibold text-ink">
                             {reference.name}
                           </span>
-                          <span className="block truncate text-xs font-medium uppercase text-stone-500">
+                          <span className="block truncate text-xs font-medium uppercase text-ink-faint">
                             {reference.type} / {categoryLabel(reference.category)}
                           </span>
                         </span>
@@ -3721,7 +3724,7 @@ export default function DrawingIdentifier() {
                     ))}
                   </div>
                 ) : (
-                  <div className="rounded border border-dashed border-stone-300 p-5 text-center text-sm font-medium text-stone-600">
+                  <div className="rounded border border-dashed border-[var(--color-line)] p-5 text-center text-sm font-medium text-ink-soft">
                     Drawable symbols are still loading.
                   </div>
                 )}
@@ -3730,10 +3733,10 @@ export default function DrawingIdentifier() {
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-5 lg:self-start">
-            <div className="rounded-md border border-stone-300 bg-white p-5 shadow-sm">
+            <div className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] p-5 shadow-sm">
               <div className="mb-4 flex items-center justify-between gap-2">
-                <h2 className="text-xl font-semibold text-stone-950">Matches</h2>
-                <span className="rounded bg-stone-100 px-2.5 py-1 text-xs font-semibold uppercase text-stone-600">
+                <h2 className="text-xl font-semibold text-ink">Matches</h2>
+                <span className="rounded bg-[var(--color-surface-sunken)] px-2.5 py-1 text-xs font-semibold uppercase text-ink-soft">
                   {filteredMatches.length || 0}
                 </span>
               </div>
@@ -3745,10 +3748,10 @@ export default function DrawingIdentifier() {
                       key={`${match.type}-${match.id}`}
                       type="button"
                       onClick={() => applyMatch(match)}
-                      className={`w-full rounded-md border p-3 text-left transition hover:border-amber-700 hover:shadow-sm ${
+                      className={`w-full rounded-md border p-3 text-left transition hover:border-[var(--color-gold)] hover:shadow-sm ${
                         match.score >= MATCH_THRESHOLD
-                          ? "border-amber-500 bg-amber-50"
-                          : "border-stone-300 bg-stone-50"
+                          ? "border-[var(--color-gold)] bg-[var(--color-gold-soft)]"
+                          : "border-[var(--color-line)] bg-[var(--color-surface-sunken)]"
                       }`}
                     >
                       <div className="flex gap-3">
@@ -3761,26 +3764,26 @@ export default function DrawingIdentifier() {
                             className="h-18 w-18 shrink-0 object-contain"
                           />
                         ) : (
-                          <div className="grid h-18 w-18 shrink-0 place-items-center rounded border border-dashed border-stone-300 text-[10px] font-semibold uppercase text-stone-500">
+                          <div className="grid h-18 w-18 shrink-0 place-items-center rounded border border-dashed border-[var(--color-line)] text-[10px] font-semibold uppercase text-ink-faint">
                             No vector
                           </div>
                         )}
                         <div className="min-w-0 space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="font-semibold leading-5 text-stone-950">
+                            <h3 className="font-semibold leading-5 text-ink">
                               {match.name}
                             </h3>
-                            <span className="rounded bg-stone-950 px-2 py-0.5 text-[10px] font-semibold uppercase text-stone-50">
+                            <span className="rounded bg-[var(--color-arcane)] px-2 py-0.5 text-[10px] font-semibold uppercase text-[var(--color-parchment-bright)]">
                               {match.type}
                             </span>
                           </div>
-                          <p className="text-xs font-medium uppercase text-stone-500">
+                          <p className="text-xs font-medium uppercase text-ink-faint">
                             {categoryLabel(match.category)}
                           </p>
-                          <p className="text-sm font-semibold text-amber-800">
+                          <p className="text-sm font-semibold text-[var(--color-gold)]">
                             {Math.round(match.score * 100)}% match
                           </p>
-                          <p className="text-xs font-medium text-stone-500">
+                          <p className="text-xs font-medium text-ink-faint">
                             Angle {match.detectedRotation} deg
                           </p>
                         </div>
@@ -3789,47 +3792,47 @@ export default function DrawingIdentifier() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-md border border-dashed border-stone-300 p-8 text-center text-sm font-medium text-stone-600">
+                <div className="rounded-md border border-dashed border-[var(--color-line)] p-8 text-center text-sm font-medium text-ink-soft">
                   Draw one symbol at a time to see live close matches. Click a match to snap only the active symbol.
                 </div>
               )}
             </div>
 
-            <div className="rounded-md border border-stone-300 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-xl font-semibold text-stone-950">
+            <div className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] p-5 shadow-sm">
+              <h2 className="mb-4 text-xl font-semibold text-ink">
                 Selected Component
               </h2>
 
               {selectedCount > 1 ? (
                 <div className="space-y-3">
-                  <p className="text-sm font-semibold text-stone-950">
+                  <p className="text-sm font-semibold text-ink">
                     {selectedCount} components selected
                   </p>
-                  <div className="rounded bg-stone-100 p-3 text-sm text-stone-700">
+                  <div className="rounded bg-[var(--color-surface-sunken)] p-3 text-sm text-ink-soft">
                     <p>{selectedSymbolIds.size} symbol(s)</p>
                     <p>{selectedCircleIds.size} spell circle(s)</p>
                   </div>
-                  <p className="text-sm font-medium text-stone-600">
+                  <p className="text-sm font-medium text-ink-soft">
                     Drag any selected component to move the whole selection. Use Ctrl-click to add or remove individual components.
                   </p>
                 </div>
               ) : selectedSymbol ? (
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm font-semibold text-stone-950">
+                    <p className="text-sm font-semibold text-ink">
                       {selectedSymbol.replacement?.reference.name ?? "Freehand symbol"}
                     </p>
-                    <p className="text-xs font-medium uppercase text-stone-500">
+                    <p className="text-xs font-medium uppercase text-ink-faint">
                       {selectedSymbol.replacement?.reference.type ?? "unidentified"} component
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-sm font-semibold text-stone-700">Change symbol</p>
+                    <p className="text-sm font-semibold text-ink-soft">Change symbol</p>
                     <button
                       type="button"
                       onClick={() => setShowChangeSymbolPicker((current) => !current)}
-                      className="flex w-full items-center justify-between gap-3 rounded border border-stone-300 bg-white p-2 text-left text-sm font-medium text-stone-800 transition hover:border-stone-950"
+                      className="flex w-full items-center justify-between gap-3 rounded border border-[var(--color-line)] bg-[var(--color-surface)] p-2 text-left text-sm font-medium text-ink transition hover:border-[var(--color-gold)]"
                     >
                       <span className="flex min-w-0 items-center gap-3">
                         {selectedSymbol.replacement?.reference.assetPath ? (
@@ -3841,7 +3844,7 @@ export default function DrawingIdentifier() {
                             className="h-9 w-9 shrink-0 object-contain"
                           />
                         ) : (
-                          <span className="grid h-9 w-9 shrink-0 place-items-center rounded border border-dashed border-stone-300 text-[9px] font-semibold uppercase text-stone-500">
+                          <span className="grid h-9 w-9 shrink-0 place-items-center rounded border border-dashed border-[var(--color-line)] text-[9px] font-semibold uppercase text-ink-faint">
                             none
                           </span>
                         )}
@@ -3849,24 +3852,24 @@ export default function DrawingIdentifier() {
                           <span className="block truncate">
                             {selectedSymbol.replacement?.reference.name ?? "Choose a known sign or sigil"}
                           </span>
-                          <span className="block text-xs font-semibold uppercase text-stone-500">
+                          <span className="block text-xs font-semibold uppercase text-ink-faint">
                             {selectedSymbol.replacement?.reference.type ?? "unidentified"}
                           </span>
                         </span>
                       </span>
-                      <span className="text-xs font-semibold uppercase text-stone-500">
+                      <span className="text-xs font-semibold uppercase text-ink-faint">
                         {showChangeSymbolPicker ? "Close" : "Open"}
                       </span>
                     </button>
                     {showChangeSymbolPicker ? (
-                      <div className="max-h-72 overflow-auto rounded border border-stone-300 bg-white p-2 shadow-sm">
+                      <div className="max-h-72 overflow-auto rounded border border-[var(--color-line)] bg-[var(--color-surface)] p-2 shadow-sm">
                         <div className="grid grid-cols-1 gap-2">
                           {preparedSymbols.map((reference) => (
                             <button
                               key={referenceKey(reference)}
                               type="button"
                               onClick={() => changeSelectedSymbolReference(referenceKey(reference))}
-                              className="flex min-h-14 items-center gap-3 rounded border border-stone-200 bg-stone-50 p-2 text-left transition hover:border-stone-950 hover:bg-white"
+                              className="flex min-h-14 items-center gap-3 rounded border border-[var(--color-line)] bg-[var(--color-surface-sunken)] p-2 text-left transition hover:border-[var(--color-gold)] hover:bg-[var(--color-surface)]"
                             >
                               {reference.assetPath ? (
                                 <Image
@@ -3877,15 +3880,15 @@ export default function DrawingIdentifier() {
                                   className="h-10 w-10 shrink-0 object-contain"
                                 />
                               ) : (
-                                <span className="grid h-10 w-10 shrink-0 place-items-center rounded border border-dashed border-stone-300 text-[9px] font-semibold uppercase text-stone-500">
+                                <span className="grid h-10 w-10 shrink-0 place-items-center rounded border border-dashed border-[var(--color-line)] text-[9px] font-semibold uppercase text-ink-faint">
                                   none
                                 </span>
                               )}
                               <span className="min-w-0">
-                                <span className="block truncate text-sm font-semibold text-stone-950">
+                                <span className="block truncate text-sm font-semibold text-ink">
                                   {reference.name}
                                 </span>
-                                <span className="block text-xs font-semibold uppercase text-stone-500">
+                                <span className="block text-xs font-semibold uppercase text-ink-faint">
                                   {reference.type} / {categoryLabel(reference.category)}
                                 </span>
                               </span>
@@ -3896,7 +3899,7 @@ export default function DrawingIdentifier() {
                     ) : null}
                   </div>
 
-                  <label className="block text-sm font-semibold text-stone-700">
+                  <label className="block text-sm font-semibold text-ink-soft">
                     Rotation {selectedSymbol.rotation} deg
                     <input
                       type="range"
@@ -3910,11 +3913,11 @@ export default function DrawingIdentifier() {
                           rotation: Number(event.target.value),
                         }))
                       }
-                      className="mt-2 w-full accent-stone-950"
+                      className="mt-2 w-full accent-[var(--color-arcane)]"
                     />
                   </label>
 
-                  <label className="block text-sm font-semibold text-stone-700">
+                  <label className="block text-sm font-semibold text-ink-soft">
                     Scale {selectedSymbol.scale.toFixed(2)}x
                     <input
                       type="range"
@@ -3928,11 +3931,11 @@ export default function DrawingIdentifier() {
                           scale: Number(event.target.value),
                         }))
                       }
-                      className="mt-2 w-full accent-stone-950"
+                      className="mt-2 w-full accent-[var(--color-arcane)]"
                     />
                   </label>
 
-                  <label className="block text-sm font-semibold text-stone-700">
+                  <label className="block text-sm font-semibold text-ink-soft">
                     Power tweak {selectedSymbol.tweaks.power.toFixed(2)}
                     <input
                       type="range"
@@ -3949,11 +3952,11 @@ export default function DrawingIdentifier() {
                           },
                         }))
                       }
-                      className="mt-2 w-full accent-stone-950"
+                      className="mt-2 w-full accent-[var(--color-arcane)]"
                     />
                   </label>
 
-                  <label className="flex items-center gap-2 text-sm font-semibold text-stone-700">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
                     <input
                       type="checkbox"
                       checked={selectedSymbol.tweaks.inverted}
@@ -3966,12 +3969,12 @@ export default function DrawingIdentifier() {
                           },
                         }))
                       }
-                      className="h-4 w-4 accent-stone-950"
+                      className="h-4 w-4 accent-[var(--color-arcane)]"
                     />
                     Inverted / reversed
                   </label>
 
-                  <label className="block text-sm font-semibold text-stone-700">
+                  <label className="block text-sm font-semibold text-ink-soft">
                     Annotation note
                     <textarea
                       value={selectedSymbol.annotation?.note ?? ""}
@@ -3985,12 +3988,12 @@ export default function DrawingIdentifier() {
                         }))
                       }
                       rows={3}
-                      className="mt-2 w-full rounded border border-stone-300 bg-white p-2 text-sm font-medium text-stone-800 outline-none focus:border-stone-950"
+                      className="mt-2 w-full rounded border border-[var(--color-line)] bg-[var(--color-surface)] p-2 text-sm font-medium text-ink outline-none focus:border-[var(--color-gold)]"
                       placeholder="Notes about this unknown or imported symbol"
                     />
                   </label>
 
-                  <label className="block text-sm font-semibold text-stone-700">
+                  <label className="block text-sm font-semibold text-ink-soft">
                     Possible effect
                     <textarea
                       value={selectedSymbol.annotation?.possibleEffect ?? ""}
@@ -4004,32 +4007,32 @@ export default function DrawingIdentifier() {
                         }))
                       }
                       rows={3}
-                      className="mt-2 w-full rounded border border-stone-300 bg-white p-2 text-sm font-medium text-stone-800 outline-none focus:border-stone-950"
+                      className="mt-2 w-full rounded border border-[var(--color-line)] bg-[var(--color-surface)] p-2 text-sm font-medium text-ink outline-none focus:border-[var(--color-gold)]"
                       placeholder="Hypothesis for later compiler review"
                     />
                   </label>
 
                   {selectedSymbol.imported ? (
-                    <div className="rounded bg-stone-100 p-3 text-sm text-stone-700">
+                    <div className="rounded bg-[var(--color-surface-sunken)] p-3 text-sm text-ink-soft">
                       <p>
                         Import confidence:{" "}
-                        <span className="font-semibold text-stone-950">
+                        <span className="font-semibold text-ink">
                           {Math.round(selectedSymbol.imported.confidence * 100)}%
                         </span>
                       </p>
                       <p>
                         Imported match:{" "}
-                        <span className="font-semibold text-stone-950">
+                        <span className="font-semibold text-ink">
                           {selectedSymbol.imported.matchName ?? "unknown"}
                         </span>
                       </p>
                     </div>
                   ) : null}
 
-                  <div className="rounded bg-stone-100 p-3 text-sm text-stone-700">
+                  <div className="rounded bg-[var(--color-surface-sunken)] p-3 text-sm text-ink-soft">
                     <p>
                       Parent spell:{" "}
-                      <span className="font-semibold text-stone-950">
+                      <span className="font-semibold text-ink">
                         {selectedSymbolParentId ?? "none"}
                       </span>
                     </p>
@@ -4045,15 +4048,15 @@ export default function DrawingIdentifier() {
               ) : selectedCircle ? (
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm font-semibold text-stone-950">
+                    <p className="text-sm font-semibold text-ink">
                       Spell boundary
                     </p>
-                    <p className="text-xs font-medium uppercase text-stone-500">
+                    <p className="text-xs font-medium uppercase text-ink-faint">
                       Boundary quality {Math.round(selectedCircle.perfection * 100)}%
                     </p>
                   </div>
 
-                  <label className="block text-sm font-semibold text-stone-700">
+                  <label className="block text-sm font-semibold text-ink-soft">
                     Radius {Math.round(selectedCircle.radius)}
                     <input
                       type="range"
@@ -4067,11 +4070,11 @@ export default function DrawingIdentifier() {
                           radius: Number(event.target.value),
                         }))
                       }
-                      className="mt-2 w-full accent-stone-950"
+                      className="mt-2 w-full accent-[var(--color-arcane)]"
                     />
                   </label>
 
-                  <label className="block text-sm font-semibold text-stone-700">
+                  <label className="block text-sm font-semibold text-ink-soft">
                     Rotation {selectedCircle.rotation} deg
                     <input
                       type="range"
@@ -4085,14 +4088,14 @@ export default function DrawingIdentifier() {
                           rotation: Number(event.target.value),
                         }))
                       }
-                      className="mt-2 w-full accent-stone-950"
+                      className="mt-2 w-full accent-[var(--color-arcane)]"
                     />
                   </label>
 
-                  <div className="rounded bg-stone-100 p-3 text-sm text-stone-700">
+                  <div className="rounded bg-[var(--color-surface-sunken)] p-3 text-sm text-ink-soft">
                     <p>
                       Parent spell:{" "}
-                      <span className="font-semibold text-stone-950">
+                      <span className="font-semibold text-ink">
                         {selectedCircleParentId ?? "none"}
                       </span>
                     </p>
@@ -4106,37 +4109,37 @@ export default function DrawingIdentifier() {
                   </div>
                 </div>
               ) : (
-                <div className="rounded-md border border-dashed border-stone-300 p-6 text-center text-sm font-medium text-stone-600">
+                <div className="rounded-md border border-dashed border-[var(--color-line)] p-6 text-center text-sm font-medium text-ink-soft">
                   Use Select, then click a symbol or spell boundary to edit its stored data.
                 </div>
               )}
             </div>
 
-            <div className="rounded-md border border-stone-300 bg-white p-5 shadow-sm">
+            <div className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] p-5 shadow-sm">
               <div className="mb-3 flex items-center justify-between gap-2">
-                <h2 className="text-xl font-semibold text-stone-950">Spell Grammar</h2>
+                <h2 className="text-xl font-semibold text-ink">Spell Grammar</h2>
                 <button
                   type="button"
                   onClick={copyGrammarText}
-                  className="inline-flex items-center gap-1.5 rounded border border-stone-300 bg-white px-2.5 py-1 text-xs font-semibold uppercase text-stone-600 transition hover:border-amber-600 hover:text-stone-950"
+                  className="inline-flex items-center gap-1.5 rounded border border-[var(--color-line)] bg-[var(--color-surface)] px-2.5 py-1 text-xs font-semibold uppercase text-ink-soft transition hover:border-[var(--color-gold)] hover:text-ink"
                 >
                   <Copy className="h-3.5 w-3.5" aria-hidden="true" />
                   Copy
                 </button>
               </div>
-              <pre className="max-h-72 whitespace-pre-wrap overflow-auto rounded bg-stone-100 p-3 text-xs leading-5 text-stone-800">
+              <pre className="max-h-72 whitespace-pre-wrap overflow-auto rounded bg-[var(--color-surface-sunken)] p-3 text-xs leading-5 text-ink">
                 {spellGrammarText}
               </pre>
             </div>
 
-            <div className="rounded-md border border-stone-300 bg-white p-5 shadow-sm">
+            <div className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] p-5 shadow-sm">
               <div className="mb-3 flex items-center justify-between gap-2">
-                <h2 className="text-xl font-semibold text-stone-950">Spell Data</h2>
-                <span className="rounded bg-stone-100 px-2.5 py-1 text-xs font-semibold uppercase text-stone-600">
+                <h2 className="text-xl font-semibold text-ink">Spell Data</h2>
+                <span className="rounded bg-[var(--color-surface-sunken)] px-2.5 py-1 text-xs font-semibold uppercase text-ink-soft">
                   JSON
                 </span>
               </div>
-              <pre className="max-h-72 overflow-auto rounded bg-stone-950 p-3 text-xs leading-5 text-stone-50">
+              <pre className="max-h-72 overflow-auto rounded bg-[var(--color-arcane)] p-3 text-xs leading-5 text-[var(--color-parchment-bright)]">
                 {JSON.stringify(spellSnapshot, null, 2)}
               </pre>
             </div>
