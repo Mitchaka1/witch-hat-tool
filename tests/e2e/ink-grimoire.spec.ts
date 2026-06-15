@@ -77,3 +77,29 @@ test("automatically advances when the selected page is spent", async ({
     page.getByRole("button", { name: "Select Watershot Seal" }),
   ).toHaveAttribute("aria-pressed", "true");
 });
+
+test("keeps touch movement controls visible with the arena", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const prepared = createPreparedSpell(demoSpells[0], 0.9, {
+    id: "e2e-mobile-flame",
+    now: 1,
+  });
+
+  await page.addInitScript((pageData) => {
+    window.localStorage.setItem("wha:onboarding:v1", "done");
+    window.localStorage.setItem(
+      "ink-grimoire-arena:prepared-spells:v1",
+      JSON.stringify([pageData]),
+    );
+  }, prepared);
+  await page.goto("/arena");
+
+  await expect(page.getByRole("button", { name: "Left" })).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Jump" })).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Right" })).toBeInViewport();
+  await expect(
+    page.getByRole("button", { name: "Cast", exact: true }),
+  ).toBeInViewport();
+});
