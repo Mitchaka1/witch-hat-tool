@@ -22,4 +22,39 @@ describe("demoSpells", () => {
       "wind_wall",
     ]);
   });
+
+  it("records the exact library-derived recipe for every demo spell", () => {
+    expect(
+      Object.fromEntries(
+        demoSpells.map((spell) => [
+          spell.id,
+          spell.libraryComponents.map((component) => component.id),
+        ]),
+      ),
+    ).toEqual({
+      flame_shot: ["fire", "column", "region"],
+      watershot: ["water", "column"],
+      rising_platform: ["water", "column", "levitation"],
+      wind_wall: ["wind", "column", "convergence"],
+      sand_cage: ["earth", "column", "crush"],
+      sylph_shoes: ["wind_underfoot", "levitation", "convergence"],
+      light_beam: ["light", "column"],
+      pyreball: ["fire", "levitation"],
+    });
+
+    for (const spell of demoSpells) {
+      expect(spell.librarySourceUrl).toMatch(
+        /^https:\/\/witchhatatelier\.telepedia\.net/,
+      );
+      expect(spell.publicName).not.toHaveLength(0);
+      expect(spell.formationDescription).not.toHaveLength(0);
+
+      for (const component of spell.libraryComponents) {
+        expect(component.assetPath).toMatch(
+          /^\/vectors\/(signs|sigils)\/.+\.svg$/,
+        );
+        expect(component.role).not.toHaveLength(0);
+      }
+    }
+  });
 });

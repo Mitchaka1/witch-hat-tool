@@ -18,6 +18,7 @@ describe("SpellList", () => {
     );
 
     expect(screen.getAllByRole("button")).toHaveLength(8);
+    expect(screen.getByText("Fire + Column + Region")).toBeInTheDocument();
     fireEvent.click(
       screen.getByRole("button", { name: /Watershot Seal/i }),
     );
