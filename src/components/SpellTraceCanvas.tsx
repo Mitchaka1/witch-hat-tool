@@ -37,15 +37,29 @@ export default function SpellTraceCanvas({
     context.clearRect(0, 0, canvas.width, canvas.height);
     if (points.length < 2) return;
 
-    context.beginPath();
-    context.moveTo(points[0].x, points[0].y);
-    points.slice(1).forEach((point) => context.lineTo(point.x, point.y));
     context.strokeStyle = "#2b2117";
     context.lineWidth = 7;
     context.lineCap = "round";
     context.lineJoin = "round";
     context.shadowColor = "rgba(74, 63, 134, 0.28)";
     context.shadowBlur = 5;
+    context.beginPath();
+    context.moveTo(points[0].x, points[0].y);
+
+    if (points.length === 2) {
+      context.lineTo(points[1].x, points[1].y);
+    } else {
+      // Smooth the trace with quadratic curves through segment midpoints so the
+      // inked ring reads as a clean line, not a chain of straight hops.
+      for (let index = 1; index < points.length - 1; index += 1) {
+        const midX = (points[index].x + points[index + 1].x) / 2;
+        const midY = (points[index].y + points[index + 1].y) / 2;
+        context.quadraticCurveTo(points[index].x, points[index].y, midX, midY);
+      }
+      const last = points[points.length - 1];
+      context.lineTo(last.x, last.y);
+    }
+
     context.stroke();
   }, []);
 
