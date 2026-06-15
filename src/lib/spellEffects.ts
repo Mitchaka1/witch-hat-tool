@@ -23,7 +23,6 @@ export function getScaledSpellStats(
 ): ScaledSpellStats {
   const quality = clamp(preparedQuality);
   const powerScale = 0.75 + quality * 0.55;
-  const utilityScale = 0.7 + quality * 0.65;
   const defaults: ScaledSpellStats = {
     damage: spell.qualityScaling.damage ? spell.basePower * powerScale : 0,
     size: spell.qualityScaling.size ? 14 + quality * 13 : 14,

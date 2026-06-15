@@ -39,8 +39,12 @@ export default function SpellPreparationScreen() {
   const [restored, setRestored] = useState(false);
 
   useEffect(() => {
-    setPrepared(loadGrimoire());
-    setRestored(true);
+    const frame = requestAnimationFrame(() => {
+      setPrepared(loadGrimoire());
+      setRestored(true);
+    });
+
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   const selectedSpell = demoSpellById.get(selectedId) ?? demoSpells[0];

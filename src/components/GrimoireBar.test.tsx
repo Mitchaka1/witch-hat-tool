@@ -20,7 +20,7 @@ describe("GrimoireBar", () => {
       />,
     );
 
-    expect(screen.getByText(/4 uses/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/4 uses/i)).toHaveLength(2);
     fireEvent.click(
       screen.getByRole("button", { name: /Select Watershot Seal/i }),
     );
