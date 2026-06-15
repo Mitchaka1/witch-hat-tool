@@ -31,15 +31,20 @@ const STAGE_WIDTH = 960;
 const STAGE_HEIGHT = 540;
 const GROUND_Y = 466;
 const GRAVITY = 1320;
+// How fast a knockback impulse bleeds off (per second). ~6 gives a snappy
+// shove that settles in ~150ms instead of being cancelled instantly.
+const KNOCKBACK_DECAY = 6;
+const BASIC_ATTACK_COOLDOWN = 430;
 
 type GameStatus = "playing" | "victory" | "defeat";
-type ControlKey = "left" | "right" | "jump";
+export type ControlKey = "left" | "right" | "jump";
 
 type Actor = {
   x: number;
   y: number;
   vx: number;
   vy: number;
+  knockbackVx: number;
   width: number;
   height: number;
   health: number;
@@ -48,9 +53,9 @@ type Actor = {
   facing: 1 | -1;
 };
 
-type ProjectileKind = "flame" | "water" | "pyreball" | "ink";
+type ProjectileKind = "flame" | "water" | "pyreball" | "ink" | "spark";
 
-type Projectile = {
+export type Projectile = {
   id: number;
   owner: "player" | "enemy";
   kind: ProjectileKind;
@@ -118,7 +123,7 @@ type Particle = {
   color: string;
 };
 
-type Runtime = {
+export type Runtime = {
   player: Actor;
   enemy: Actor;
   projectiles: Projectile[];
@@ -135,6 +140,7 @@ type Runtime = {
   enemyShotReadyAt: number;
   enemyJumpAt: number;
   speedBuffUntil: number;
+  playerBasicReadyAt: number;
   message: string;
   messageUntil: number;
   shakeUntil: number;
@@ -152,13 +158,14 @@ function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(maximum, Math.max(minimum, value));
 }
 
-function createRuntime(): Runtime {
+export function createRuntime(): Runtime {
   return {
     player: {
       x: 140,
       y: GROUND_Y - 58,
       vx: 0,
       vy: 0,
+      knockbackVx: 0,
       width: 38,
       height: 58,
       health: 100,
@@ -171,6 +178,7 @@ function createRuntime(): Runtime {
       y: GROUND_Y - 62,
       vx: 0,
       vy: 0,
+      knockbackVx: 0,
       width: 42,
       height: 62,
       health: 120,
@@ -192,6 +200,7 @@ function createRuntime(): Runtime {
     enemyShotReadyAt: 1700,
     enemyJumpAt: 1200,
     speedBuffUntil: 0,
+    playerBasicReadyAt: 0,
     message: "The duel begins.",
     messageUntil: 1600,
     shakeUntil: 0,
@@ -298,7 +307,9 @@ function damageEnemy(
     0,
     runtime.enemy.maxHealth,
   );
-  runtime.enemy.vx += direction * push;
+  // Knockback goes to a decaying impulse, not vx — vx is overwritten by the AI
+  // every frame, so adding to it there would do nothing.
+  runtime.enemy.knockbackVx += direction * push;
   const center = actorCenter(runtime.enemy);
   emitParticles(runtime, center.x, center.y, color, 10);
   runtime.shakeUntil = now + 120;
@@ -316,7 +327,9 @@ function damagePlayer(
     0,
     runtime.player.maxHealth,
   );
-  runtime.player.vx += direction * push;
+  // Knockback as a decaying impulse so the shove is felt even though vx is
+  // reset from input every frame.
+  runtime.player.knockbackVx += direction * push;
   const center = actorCenter(runtime.player);
   emitParticles(runtime, center.x, center.y, "#d76a65", 8);
   runtime.shakeUntil = now + 100;
@@ -386,11 +399,11 @@ function explodePyreball(
   runtime.shakeUntil = now + 220;
 }
 
-function updateRuntime(
+export function updateRuntime(
   runtime: Runtime,
   delta: number,
   now: number,
-  controls: ReadonlySet<ControlKey>,
+  controls: Set<ControlKey>,
 ) {
   if (runtime.status !== "playing") {
     updateParticles(runtime, delta);
@@ -410,11 +423,15 @@ function updateRuntime(
   if (controls.has("jump") && runtime.player.onGround) {
     runtime.player.vy = -jumpSpeed;
     runtime.player.onGround = false;
+    controls.delete("jump"); // edge-trigger: one jump per press, no auto-hop
   }
 
   const previousPlayerY = runtime.player.y;
   runtime.player.vy += GRAVITY * delta;
-  runtime.player.x += runtime.player.vx * delta;
+  runtime.player.x +=
+    (runtime.player.vx + runtime.player.knockbackVx) * delta;
+  runtime.player.knockbackVx -=
+    runtime.player.knockbackVx * Math.min(1, delta * KNOCKBACK_DECAY);
   runtime.player.y += runtime.player.vy * delta;
   runtime.player.x = clamp(
     runtime.player.x,
@@ -507,7 +524,9 @@ function updateEnemy(runtime: Runtime, delta: number, now: number) {
 
   const previousEnemyY = runtime.enemy.y;
   runtime.enemy.vy += GRAVITY * delta;
-  runtime.enemy.x += runtime.enemy.vx * delta;
+  runtime.enemy.x += (runtime.enemy.vx + runtime.enemy.knockbackVx) * delta;
+  runtime.enemy.knockbackVx -=
+    runtime.enemy.knockbackVx * Math.min(1, delta * KNOCKBACK_DECAY);
   runtime.enemy.y += runtime.enemy.vy * delta;
   runtime.enemy.x = clamp(
     runtime.enemy.x,
@@ -819,6 +838,10 @@ function drawProjectile(
     gradient.addColorStop(0, "#ffd9eb");
     gradient.addColorStop(0.45, "#d86c8f");
     gradient.addColorStop(1, "#5d214d");
+  } else if (projectile.kind === "spark") {
+    gradient.addColorStop(0, "#f3eeff");
+    gradient.addColorStop(0.45, "#a994ef");
+    gradient.addColorStop(1, "#4a3f86");
   } else {
     gradient.addColorStop(0, "#fff3a8");
     gradient.addColorStop(0.45, "#ff9c3f");
@@ -1094,6 +1117,10 @@ export default function ArenaGame() {
     runtime.messageUntil = now + 950;
   }, []);
 
+  const fireBasicAttack = useCallback(() => {
+    castBasicAttack(runtimeRef.current, performance.now());
+  }, []);
+
   const resetBattle = useCallback(() => {
     const freshPages = initialPagesRef.current.map((page) => ({
       ...page,
@@ -1296,6 +1323,15 @@ export default function ArenaGame() {
               aria-label="Ink Grimoire Arena combat stage"
               onPointerMove={handlePointerMove}
               onClick={castSelectedSpell}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                const bounds = event.currentTarget.getBoundingClientRect();
+                runtimeRef.current.aim = {
+                  x: ((event.clientX - bounds.left) / bounds.width) * STAGE_WIDTH,
+                  y: ((event.clientY - bounds.top) / bounds.height) * STAGE_HEIGHT,
+                };
+                fireBasicAttack();
+              }}
               className="absolute inset-0 h-full w-full cursor-crosshair touch-none"
             />
 
@@ -1403,7 +1439,7 @@ export default function ArenaGame() {
 
           <div className="rounded-2xl border border-white/10 bg-[#17152b]/95 p-3 shadow-xl">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-white/55">
-              <p>Q / E flip pages · Mouse aims · Click or F casts</p>
+              <p>Q / E flip pages · Mouse aims · Click or F casts · Right-click flicks ink</p>
               <p className="flex items-center gap-1.5">
                 <Footprints className="h-3.5 w-3.5" aria-hidden="true" />
                 A / D move · Space or W jumps
@@ -1552,6 +1588,39 @@ function activateSpell(
       break;
     }
   }
+}
+
+// An always-available, weak ink flick so a player who spends every page can
+// still finish the duel. Spells stay the powerful, limited option.
+export function castBasicAttack(runtime: Runtime, now: number) {
+  if (runtime.status !== "playing" || now < runtime.playerBasicReadyAt) {
+    return;
+  }
+
+  const origin = actorCenter(runtime.player);
+  const deltaX = runtime.aim.x - origin.x;
+  const deltaY = runtime.aim.y - origin.y;
+  const length = Math.max(1, Math.hypot(deltaX, deltaY));
+  const directionX = length <= 1 ? runtime.player.facing : deltaX / length;
+  const directionY = length <= 1 ? 0 : deltaY / length;
+
+  runtime.projectiles.push({
+    id: runtime.nextId++,
+    owner: "player",
+    kind: "spark",
+    x: origin.x + directionX * 24,
+    y: origin.y + directionY * 24,
+    vx: directionX * 545,
+    vy: directionY * 545,
+    radius: 7,
+    damage: 4,
+    push: 70,
+    explosionRadius: 0,
+    ttl: 1.6,
+    color: "#c6b6f5",
+  });
+  emitParticles(runtime, origin.x, origin.y, "#c6b6f5", 5, 90);
+  runtime.playerBasicReadyAt = now + BASIC_ATTACK_COOLDOWN;
 }
 
 function HealthPanel({
