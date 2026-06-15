@@ -29,6 +29,7 @@ import {
 } from "react";
 import signsData from "@/data/signs.json";
 import sigilsData from "@/data/sigils.json";
+import MagicCircle from "@/components/onboarding/MagicCircle";
 
 type SymbolType = "sign" | "sigil";
 
@@ -3400,21 +3401,24 @@ export default function DrawingIdentifier() {
   );
 
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-950">
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-4 border-b border-stone-300 pb-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-semibold uppercase tracking-wide text-amber-700">
-              Draw and identify
-            </p>
-            <h1 className="text-3xl font-semibold tracking-normal text-stone-950 sm:text-4xl">
-              Symbol Sketch Matcher
-            </h1>
+    <div className="page-atmosphere min-h-screen text-ink">
+      <main className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8">
+        <header className="flex flex-col gap-5 border-b border-[var(--color-line)] pb-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex items-center gap-4">
+            <MagicCircle className="h-14 w-14 shrink-0 text-[var(--color-arcane)]" />
+            <div className="space-y-1.5">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-gold)]">
+                The Workshop
+              </p>
+              <h1 className="font-[family-name:var(--font-cinzel)] text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+                Draw &amp; Identify
+              </h1>
+            </div>
           </div>
 
           <Link
             href="/"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-800 shadow-sm transition hover:border-amber-600 hover:text-stone-950"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[var(--color-line-strong)] bg-[var(--color-surface)] px-4 text-sm font-semibold text-ink shadow-sm transition hover:border-[var(--color-gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-arcane-bright)]"
           >
             <Library className="h-4 w-4" aria-hidden="true" />
             Library

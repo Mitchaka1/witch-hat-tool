@@ -1,26 +1,201 @@
 @import "tailwindcss";
 
+/*
+  Witch Hat Atelier — design tokens.
+  A warm parchment + ink palette (the manga's white page & black linework),
+  brass/gold for the atelier's tooling, and an arcane indigo glow for "live" magic.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --parchment-base: #e7dcc4;
+  --parchment: #f3ecd9;
+  --parchment-bright: #fbf6ea;
+  --surface: #fffdf7;
+  --surface-sunken: #f1e9d6;
+
+  --ink: #211a12;
+  --ink-soft: #5b5040;
+  --ink-faint: #8a7d68;
+
+  --line: #d8cbab;
+  --line-strong: #c4b491;
+
+  --gold: #a87a22;
+  --gold-bright: #c89a3d;
+  --gold-soft: #e9d6a6;
+
+  --arcane: #4a3f86;
+  --arcane-bright: #7b6fcf;
+  --arcane-glow: #9a8cf0;
+
+  --ember: #bd5128;
+
+  --background: var(--parchment-base);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-parchment: var(--parchment);
+  --color-parchment-bright: var(--parchment-bright);
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
+
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+  --color-gold-soft: var(--gold-soft);
+
+  --color-arcane: var(--arcane);
+  --color-arcane-bright: var(--arcane-bright);
+  --color-arcane-glow: var(--arcane-glow);
+
+  --color-ember: var(--ember);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-cinzel);
 }
 
 body {
-  background: var(--background);
+  background: var(--parchment-base);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Faint paper grain — gives surfaces a hand-made, atelier feel instead of flat fills. */
+.paper-grain {
+  position: relative;
+}
+.paper-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* Atmospheric backdrop for full-page surfaces: warm candle glow over parchment. */
+.page-atmosphere {
+  background-color: var(--parchment-base);
+  background-image:
+    radial-gradient(120% 90% at 50% -10%, rgba(252, 246, 233, 0.95) 0%, rgba(231, 220, 196, 0) 55%),
+    radial-gradient(80% 70% at 85% 110%, rgba(154, 140, 240, 0.1) 0%, rgba(231, 220, 196, 0) 60%),
+    radial-gradient(70% 60% at 12% 95%, rgba(200, 154, 61, 0.12) 0%, rgba(231, 220, 196, 0) 55%);
+}
+
+/* Thin engraved gold rule used under headings & brand marks. */
+.rule-filigree {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gold-soft) 12%,
+    var(--gold) 50%,
+    var(--gold-soft) 88%,
+    transparent
+  );
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes spin-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes sigil-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    filter: drop-shadow(0 0 0 rgba(154, 140, 240, 0));
+  }
+  50% {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 10px rgba(154, 140, 240, 0.55));
+  }
+}
+@keyframes float-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes slide-fade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-22px);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 48s linear infinite;
+  transform-origin: center;
+}
+.animate-spin-reverse {
+  animation: spin-reverse 36s linear infinite;
+  transform-origin: center;
+}
+.animate-sigil-pulse {
+  animation: sigil-pulse 4s ease-in-out infinite;
+}
+.animate-float-up {
+  animation: float-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-slide-fade {
+  animation: slide-fade 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-backdrop-in {
+  animation: backdrop-in 0.4s ease-out both;
+}
+
+/* Honor users who prefer less motion — disable looping/decorative animation. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin-slow,
+  .animate-spin-reverse,
+  .animate-sigil-pulse,
+  .animate-float-up,
+  .animate-slide-fade,
+  .animate-backdrop-in {
+    animation: none !important;
+  }
+  * {
+    scroll-behavior: auto !important;
+  }
 }
